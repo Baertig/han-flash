@@ -74,7 +74,7 @@ const emit = defineEmits(["enhance", "delete"]);
               :key="index"
               class="q-mb-xs"
             >
-              <span class="text-weight-bold">{{ item.word }}</span>
+              <span>{{ item.word }}</span>
               <span v-if="item.pinyin" class="text-primary q-ml-xs"
                 >({{ item.pinyin }})</span
               >:

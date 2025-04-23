@@ -49,13 +49,22 @@ export const useFlashcardsStore = defineStore("flashcards", {
 
   actions: {
     addFlashcard(cardData) {
+      // Create a new flashcard with all the provided data
       const newCard = {
         id: this.nextId++,
-        ...cardData,
-        exampleSentence: "",
-        sentencePinyin: "",
-        sentenceTranslation: "",
-        sentenceBreakdown: [],
+        word: cardData.word || "",
+        pinyin: cardData.pinyin || "",
+        translation: cardData.translation || "",
+        exampleSentence: cardData.exampleSentence || "",
+        sentencePinyin: cardData.sentencePinyin || "",
+        sentenceTranslation: cardData.sentenceTranslation || "",
+        sentenceBreakdown: cardData.sentenceBreakdown?.length
+          ? cardData.sentenceBreakdown.map((item) => ({
+              word: item.word || "",
+              pinyin: item.pinyin || "",
+              meaning: item.meaning || "",
+            }))
+          : [],
         hasAudio: false,
         hasImage: false,
       };

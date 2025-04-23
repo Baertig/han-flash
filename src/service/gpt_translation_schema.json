@@ -1,0 +1,75 @@
+{
+  "name": "chinese_word_translation",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "translation": {
+        "type": "string",
+        "description": "The translation of the Chinese word into English."
+      },
+      "pinyin": {
+        "type": "string",
+        "description": "The pinyin representation of the Chinese word."
+      },
+      "example_sentence": {
+        "type": "string",
+        "description": "An example sentence that includes the Chinese word."
+      },
+      "example_sentence_pinyin": {
+        "type": "string",
+        "description": "The pinyin representation of the example sentence."
+      },
+      "example_sentence_translation": {
+        "type": "string",
+        "description": "The English translation of the example sentence."
+      },
+      "sentence_breakdown": {
+        "type": "object",
+        "description": "A breakdown of the example sentence into its components.",
+        "properties": {
+          "components": {
+            "type": "array",
+            "description": "The individual parts or words that make up the example sentence.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "word": {
+                  "type": "string",
+                  "description": "The word or part of the sentence."
+                },
+                "pinyin": {
+                  "type": "string",
+                  "description": "The pinyin pronunciation of this word."
+                },
+                "translation": {
+                  "type": "string",
+                  "description": "The translation of the word into English."
+                }
+              },
+              "required": [
+                "word",
+                "pinyin",
+                "translation"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "components"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "translation",
+      "pinyin",
+      "example_sentence",
+      "example_sentence_pinyin",
+      "example_sentence_translation",
+      "sentence_breakdown"
+    ],
+    "additionalProperties": false
+  },
+  "strict": true
+}

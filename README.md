@@ -24,6 +24,8 @@ Anki Card Creator is designed to streamline the creation of comprehensive flashc
 - Text-to-speech functionality for pronunciation practice
 - Image generation using DALL-E or similar services to provide visual context
 - Data persistence
+- Ability to edit existing flashcards
+- Ability to enter an english word an let gpt fill out the rest.
 
 ## Technologies Used
 
@@ -66,13 +68,13 @@ Each flashcard contains:
   exampleSentence: String, // Example sentence in Chinese
   sentencePinyin: String, // Pinyin for the full example sentence
   sentenceTranslation: String, // English translation of the example sentence
-  sentenceBreakdown: [
+  sentenceBreakdown: [ // Detailed word-by-word analysis:
     {
       word: String, // Component word from the sentence
       pinyin: String, // Pinyin for the component word
       meaning: String // English meaning of the component word
     }
-  ], // Detailed word-by-word analysis
+  ], 
   hasAudio: Boolean,
   hasImage: Boolean
 }

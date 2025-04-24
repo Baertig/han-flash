@@ -15,12 +15,14 @@ Anki Card Creator is designed to streamline the creation of comprehensive flashc
 - View existing flashcards in a responsive grid layout
 - Add and delete flashcards
 - **Expandable Sections**: Example sentence and breakdown sections automatically expand when populated.
+- **Anki Export**: Export all current flashcards to a `.txt` file suitable for importing into Anki. The format uses HTML line breaks (`<br>`) and separates front/back fields with a semicolon.
+  - *Front*: Translation
+  - *Back*: Word, Pinyin, Example Sentence (with Pinyin & Translation), Sentence Breakdown.
 
 ## Planned Features
 
 - Text-to-speech functionality for pronunciation practice
 - Image generation using DALL-E or similar services to provide visual context
-- Export capabilities to Anki format
 - Data persistence
 
 ## Technologies Used

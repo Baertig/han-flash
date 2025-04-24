@@ -11,6 +11,30 @@ const flashcardsStore = useFlashcardsStore();
 // Using storeToRefs to maintain reactivity
 const { flashcards } = storeToRefs(flashcardsStore);
 
+// Function to trigger download
+const downloadAnkiFile = () => {
+  const ankiText = flashcardsStore.exportToAnkiFormat();
+  if (!ankiText) {
+    $q.notify({
+      message: 'No flashcards available to export.',
+      color: 'warning',
+      icon: 'warning',
+      position: 'top'
+    });
+    return;
+  }
+
+  const blob = new Blob([ankiText], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'anki_export.txt'; // Filename for the download
+  document.body.appendChild(link); // Required for Firefox
+  link.click();
+  document.body.removeChild(link); // Clean up
+  URL.revokeObjectURL(url); // Free up memory
+};
+
 // Open new flashcard dialog using Quasar Dialog plugin
 function openNewCardDialog() {
   $q.dialog({
@@ -38,6 +62,17 @@ function deleteFlashcard(id) {
     <p class="q-mb-lg">
       Create content-rich flashcards for learning Chinese vocabulary
     </p>
+
+    <!-- Add the download button here -->
+    <div class="q-mb-md">
+      <q-btn
+        color="secondary"
+        icon="download"
+        label="Export for Anki"
+        @click="downloadAnkiFile"
+        :disable="flashcards.length === 0" 
+      />
+    </div>
 
     <div v-if="flashcards.length === 0" class="text-center q-pa-xl">
       <q-icon name="info" size="3rem" color="grey-7" />

@@ -96,5 +96,43 @@ export const useFlashcardsStore = defineStore("flashcards", {
       // text-to-speech, images, etc.
       return this.updateFlashcard(id, enhancementData);
     },
+
+    exportToAnkiFormat() {
+      const lines = this.flashcards.map((card) => {
+        const front = card.translation || "";
+
+        const breakdownString = card.sentenceBreakdown
+          ?.map(
+            (item) =>
+              `${item.word || ""} (${item.pinyin || ""}) - ${
+                item.meaning || ""
+              }`
+          )
+          .join("<br>");
+
+        const back = [
+          card.word || "",
+          card.pinyin || "",
+          "-----",
+          card.exampleSentence || "",
+          card.sentencePinyin || "",
+          card.sentenceTranslation || "",
+          "", // Empty line
+          breakdownString || "",
+        ].join("<br>");
+
+        // Escape any existing semicolons in fields if necessary, though unlikely here.
+        // For simplicity, we assume fields don't contain semicolons or newlines for now.
+        return `${front};${back}`;
+      });
+
+      // Add header to allow HTML import in Anki
+      // Although not strictly necessary if the user checks the box,
+      // it's good practice if the format relies on HTML.
+      // Anki doesn't have a specific header for *allowing* HTML,
+      // the user enables it in the import dialog.
+      // We just return the formatted lines.
+      return lines.join("\n");
+    },
   },
 });

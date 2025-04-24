@@ -109,12 +109,3 @@ const emit = defineEmits(["enhance", "delete"]);
   </q-card>
 </template>
 
-<style scoped>
-.flashcard {
-  transition: transform 0.3s;
-}
-.flashcard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-</style>

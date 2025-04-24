@@ -37,13 +37,12 @@ const form = ref({
 // Computed property to check if the word field is filled
 const canAutofill = computed(() => !!form.value.word.trim());
 
-// Generate a new empty breakdown component
-const newBreakdownItem = () => ({ word: "", pinyin: "", meaning: "" });
-
-// Add an empty breakdown item
-function addBreakdownItem() {
-  form.value.sentenceBreakdown.push(newBreakdownItem());
-}
+// Define columns for the breakdown table
+const breakdownColumns = [
+  { name: 'word', label: 'Word', field: row => `${row.word} (${row.pinyin})`, align: 'left', sortable: true, style: 'white-space: normal;' }, // Allow wrapping
+  { name: 'meaning', label: 'Meaning', field: 'meaning', align: 'left', sortable: true, style: 'white-space: normal;' }, // Allow wrapping
+  { name: 'actions', label: 'Actions', field: 'actions', align: 'center' }
+];
 
 // Remove a breakdown item
 function removeBreakdownItem(index) {
@@ -139,13 +138,6 @@ function onSubmit() {
     };
   }
 }
-
-// Initialize with one empty breakdown item if needed
-watch(() => form.value.exampleSentence, (newVal) => {
-  if (newVal && form.value.sentenceBreakdown.length === 0) {
-    addBreakdownItem();
-  }
-});
 
 // Expose the form for external access if needed
 defineExpose({
@@ -251,30 +243,34 @@ defineExpose({
 
                 <div class="text-subtitle2 q-mb-sm">Sentence Breakdown</div>
                 
-                <div v-for="(item, index) in form.sentenceBreakdown" :key="index" class="row q-col-gutter-sm q-mb-sm">
-                  <div class="col-12 col-sm-4">
-                    <q-input v-model="item.word" label="Word" dense outlined />
-                  </div>
-                  <div class="col-12 col-sm-4">
-                    <q-input v-model="item.pinyin" label="Pinyin" dense outlined />
-                  </div>
-                  <div class="col-12 col-sm-3">
-                    <q-input v-model="item.meaning" label="Meaning" dense outlined />
-                  </div>
-                  <div class="col-12 col-sm-1 flex items-center">
-                    <q-btn round dense flat icon="delete" color="negative" @click="removeBreakdownItem(index)" />
-                  </div>
+                <q-table
+                  :rows="form.sentenceBreakdown"
+                  :columns="breakdownColumns"
+                  row-key="word" 
+                  flat
+                  bordered
+                  dense
+                  :rows-per-page-options="[0]" 
+                  hide-bottom 
+                  v-if="form.sentenceBreakdown.length > 0"
+                >
+                  <template v-slot:body-cell-actions="props">
+                    <q-td :props="props" class="q-gutter-xs">
+                      <q-btn 
+                        round 
+                        dense 
+                        flat 
+                        icon="delete" 
+                        color="negative" 
+                        @click="removeBreakdownItem(form.sentenceBreakdown.indexOf(props.row))" 
+                      />
+                    </q-td>
+                  </template>
+                </q-table>
+                <div v-else class="text-grey q-mt-sm">
+                  No breakdown available. Use Autofill or add an example sentence manually.
                 </div>
 
-                <div class="row justify-center q-mt-md">
-                  <q-btn 
-                    label="Add Word" 
-                    icon="add" 
-                    color="secondary" 
-                    flat 
-                    @click="addBreakdownItem" 
-                  />
-                </div>
               </q-card-section>
             </q-card>
           </q-expansion-item>

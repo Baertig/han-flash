@@ -1,5 +1,5 @@
 <script setup>
-import FlashcardList from './components/FlashcardList.vue'
+import { RouterView } from 'vue-router'
 </script>
 
 <template>
@@ -13,7 +13,7 @@ import FlashcardList from './components/FlashcardList.vue'
     </q-header>
 
     <q-page-container>
-      <FlashcardList />
+      <RouterView />
     </q-page-container>
   </q-layout>
 </template>

@@ -1,12 +1,13 @@
 <script setup>
 import { useQuasar } from "quasar";
 import { storeToRefs } from "pinia";
-import Flashcard from "./flashcard/Flashcard.vue";
-import NewFlashcardDialog from "../dialogs/NewFlashcardDialog.vue";
+import Flashcard from "../components/Flashcard.vue";
 import { useFlashcardsStore } from "../stores/flashcards";
+import { useRouter } from 'vue-router';
 
 const $q = useQuasar();
 const flashcardsStore = useFlashcardsStore();
+const router = useRouter();
 
 // Using storeToRefs to maintain reactivity
 const { flashcards } = storeToRefs(flashcardsStore);
@@ -35,13 +36,9 @@ const downloadAnkiFile = () => {
   URL.revokeObjectURL(url); // Free up memory
 };
 
-// Open new flashcard dialog using Quasar Dialog plugin
-function openNewCardDialog() {
-  $q.dialog({
-    component: NewFlashcardDialog,
-  }).onOk((data) => {
-    flashcardsStore.addFlashcard(data);
-  });
+// Navigate to new card page
+function goToNewCard() {
+  router.push({ name: 'NewCard' });
 }
 
 // Handle flashcard actions
@@ -103,7 +100,7 @@ function deleteFlashcard(id) {
 
     <!-- Floating action button -->
     <q-page-sticky position="bottom-right" :offset="[18, 18]">
-      <q-btn fab icon="add" color="primary" @click="openNewCardDialog" />
+      <q-btn fab icon="add" color="primary" @click="goToNewCard" />
     </q-page-sticky>
   </div>
 </template>

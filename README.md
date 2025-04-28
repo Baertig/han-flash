@@ -21,11 +21,13 @@ Anki Card Creator is designed to streamline the creation of comprehensive flashc
 
 ## Planned Features
 
-- Text-to-speech functionality for pronunciation practice
-- Image generation using DALL-E or similar services to provide visual context
-- Data persistence
 - Ability to edit existing flashcards
 - Ability to enter an english word an let gpt fill out the rest.
+- Text-to-speech functionality for pronunciation practice
+- Add keyboard shortcuts
+- Image generation using DALL-E or similar services to provide visual context
+- Data persistence
+
 
 ## Technologies Used
 
@@ -40,15 +42,6 @@ Anki Card Creator is designed to streamline the creation of comprehensive flashc
 
 The application follows a modular architecture with clear separation of concerns:
 
-### Component Structure
-
-- **App.vue**: Main application container with Quasar layout
-- **Components**:
-  - **FlashcardList.vue**: Displays the list of flashcards and handles the add card dialog
-  - **flashcard/Flashcard.vue**: Reusable component for displaying individual flashcards
-- **Dialogs**:
-  - **NewFlashcardDialog.vue**: Dialog for adding new flashcards, using Quasar Dialog Plugin
-
 ### State Management
 
 - **Pinia Store** (`stores/flashcards.js`): Centralized state management for:
@@ -62,21 +55,22 @@ Each flashcard contains:
 ```javascript
 {
   id: Number,
-  word: String,         // Chinese word/character
-  pinyin: String,       // Pronunciation guide for the main word
-  translation: String,  // English translation of the main word
-  exampleSentence: String, // Example sentence in Chinese
+  word: String,           // Chinese word/character
+  pinyin: String,         // Pronunciation guide for the main word
+  translation: String,    // English translation of the main word
+  exampleSentence: String,// Example sentence in Chinese
   sentencePinyin: String, // Pinyin for the full example sentence
   sentenceTranslation: String, // English translation of the example sentence
-  sentenceBreakdown: [ // Detailed word-by-word analysis:
+  sentenceBreakdown: [    // Detailed word-by-word analysis:
     {
-      word: String, // Component word from the sentence
-      pinyin: String, // Pinyin for the component word
-      meaning: String // English meaning of the component word
+      word: String,       // Component word from the sentence
+      pinyin: String,     // Pinyin for the component word
+      meaning: String,    // English meaning of the component word
+      visible: Boolean    // Whether this component is displayed
     }
   ], 
-  hasAudio: Boolean,
-  hasImage: Boolean
+  hasAudio: Boolean,      // Whether the flashcard has an associated audio file
+  hasImage: Boolean       // Whether the flashcard has an associated image
 }
 ```
 

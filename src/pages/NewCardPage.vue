@@ -15,6 +15,8 @@
                 outlined
                 class="q-mb-md"
                 :rules="[(val) => !!val || 'Word is required']"
+                @keyup.enter.native="autofillWithAI"
+                autofocus
               >
                 <template v-slot:append>
                   <q-btn

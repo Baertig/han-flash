@@ -16,18 +16,17 @@ Anki Card Creator is designed to streamline the creation of comprehensive flashc
 - Add and delete flashcards
 - **Expandable Sections**: Example sentence and breakdown sections automatically expand when populated.
 - **Anki Export**: Export all current flashcards to a `.txt` file suitable for importing into Anki. The format uses HTML line breaks (`<br>`) and separates front/back fields with a semicolon.
-  - *Front*: Translation
-  - *Back*: Word, Pinyin, Example Sentence (with Pinyin & Translation), Sentence Breakdown.
+  - _Front_: Translation
+  - _Back_: Word, Pinyin, Example Sentence (with Pinyin & Translation), Sentence Breakdown.
+- **Text-to-Speech**: Generate audio for example sentences using OpenAI TTS and play it directly within the flashcard.
 
 ## Planned Features
 
 - Ability to edit existing flashcards
 - Ability to enter an english word an let gpt fill out the rest.
-- Text-to-speech functionality for pronunciation practice
 - Add keyboard shortcuts
 - Image generation using DALL-E or similar services to provide visual context
 - Data persistence
-
 
 ## Technologies Used
 
@@ -52,6 +51,7 @@ The application follows a modular architecture with clear separation of concerns
 ### Data Structure
 
 Each flashcard contains:
+
 ```javascript
 {
   id: Number,
@@ -68,9 +68,8 @@ Each flashcard contains:
       meaning: String,    // English meaning of the component word
       visible: Boolean    // Whether this component is displayed
     }
-  ], 
-  hasAudio: Boolean,      // Whether the flashcard has an associated audio file
-  hasImage: Boolean       // Whether the flashcard has an associated image
+  ],
+  audioUrl: String,           // URL of generated pronunciation audio for the example sentence
 }
 ```
 
@@ -112,4 +111,3 @@ npm run dev
 ## License
 
 [MIT License](LICENSE)
-

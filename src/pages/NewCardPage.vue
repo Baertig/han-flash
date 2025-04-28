@@ -10,6 +10,7 @@ const flashcardsStore = useFlashcardsStore();
 const router = useRouter();
 
 const loading = ref(false);
+const loadingAudio = ref(false);
 
 const form = ref({
   word: "",
@@ -19,9 +20,11 @@ const form = ref({
   sentencePinyin: "",
   sentenceTranslation: "",
   sentenceBreakdown: [],
+  audioUrl: "",
 });
 
 const canAutofill = computed(() => !!form.value.word.trim());
+const canGenerateAudio = computed(() => !!form.value.exampleSentence.trim());
 
 const breakdownColumns = [
   {
@@ -120,6 +123,45 @@ async function autofillWithAI() {
   }
 }
 
+async function generateAudio() {
+  if (!form.value.exampleSentence) return;
+  loadingAudio.value = true;
+  try {
+    const response = await fetch("https://api.openai.com/v1/audio/speech", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+        Accept: "audio/mpeg",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini-tts",
+        input: form.value.exampleSentence,
+        instructions: "请说得清楚、友好，而且发音要准确。特别注意语调的准确性。",
+        voice: "ash",
+        response_format: "mp3",
+      }),
+    });
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    form.value.audioUrl = url;
+    $q.notify({
+      color: "positive",
+      message: "Audio generated successfully",
+      icon: "volume_up",
+    });
+  } catch (error) {
+    console.error("Error generating audio:", error);
+    $q.notify({
+      color: "negative",
+      message: "Failed to generate audio",
+      icon: "error",
+    });
+  } finally {
+    loadingAudio.value = false;
+  }
+}
+
 function onSubmit() {
   if (form.value.word && form.value.translation) {
     flashcardsStore.addFlashcard({ ...form.value });
@@ -196,7 +238,21 @@ function onCancel() {
                 label="Example Sentence"
                 outlined
                 class="q-mb-md"
-              />
+              >
+                <template v-slot:append>
+                  <q-btn
+                    round
+                    dense
+                    flat
+                    icon="volume_up"
+                    color="primary"
+                    :disable="!canGenerateAudio"
+                    :loading="loadingAudio"
+                    @click="generateAudio"
+                    title="Text-to-Speech"
+                  />
+                </template>
+              </q-input>
             </div>
             <div class="col-12 col-md-6">
               <q-input
@@ -246,6 +302,10 @@ function onCancel() {
           <div v-else class="text-grey q-mt-sm">
             No breakdown available. Use Autofill or add an example sentence
             manually.
+          </div>
+
+          <div v-if="form.audioUrl" class="q-mt-md">
+            <audio controls :src="form.audioUrl" />
           </div>
         </q-form>
       </q-card-section>

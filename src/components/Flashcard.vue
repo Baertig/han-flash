@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps } from "vue";
+import { defineProps, ref, watch } from "vue";
 
 const props = defineProps({
   word: {
@@ -30,22 +30,32 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  hasAudio: {
-    type: Boolean,
-    default: false,
-  },
-  hasImage: {
-    type: Boolean,
-    default: false,
+  audioUrl: {
+    type: String,
+    default: "",
   },
 });
 
 // Emits for actions
 const emit = defineEmits(["enhance", "delete"]);
+
+// reference to hidden audio element
+const audioRef = ref(null);
+// update audio src when prop changes
+watch(() => props.audioUrl, src => {
+  if (audioRef.value && src) audioRef.value.src = src;
+});
+// play audio on button click
+function playAudio() {
+  if (audioRef.value) audioRef.value.play();
+}
 </script>
 
 <template>
   <q-card class="flashcard">
+    <!-- hidden audio element for playback -->
+    <audio ref="audioRef" :src="audioUrl" hidden />
+
     <q-card-section>
       <div class="row items-baseline">
         <div class="text-h5 q-mr-md">{{ word }}</div>
@@ -104,8 +114,7 @@ const emit = defineEmits(["enhance", "delete"]);
 
       <q-space />
 
-      <q-btn v-if="hasAudio" flat round color="primary" icon="volume_up" />
-      <q-btn v-if="hasImage" flat round color="primary" icon="image" />
+      <q-btn v-if="!!props.audioUrl" flat color="primary" icon="volume_up" @click="playAudio" />
     </q-card-actions>
   </q-card>
 </template>

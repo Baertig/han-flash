@@ -90,8 +90,7 @@ function deleteFlashcard(id) {
           :sentence-pinyin="card.sentencePinyin"
           :sentence-translation="card.sentenceTranslation"
           :sentence-breakdown="card.sentenceBreakdown"
-          :has-audio="card.hasAudio"
-          :has-image="card.hasImage"
+          :audio-url="card.audioUrl"
           @enhance="enhanceFlashcard(card.id)"
           @delete="deleteFlashcard(card.id)"
         />

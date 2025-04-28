@@ -53,75 +53,64 @@
             </div>
           </div>
 
-          <q-expansion-item
-            icon="format_quote"
-            label="Example Sentence"
-            caption="Add an example sentence with breakdown"
-            header-class="text-primary"
-            expand-separator
-            v-model="exampleSentenceExpanded"
+          <div class="row q-col-gutter-md">
+            <div class="col-12 col-md-6">
+              <q-input
+                v-model="form.exampleSentence"
+                label="Example Sentence"
+                outlined
+                class="q-mb-md"
+              />
+            </div>
+            <div class="col-12 col-md-6">
+              <q-input
+                v-model="form.sentencePinyin"
+                label="Sentence Pinyin"
+                outlined
+                class="q-mb-md"
+              />
+            </div>
+            <div class="col-12">
+              <q-input
+                v-model="form.sentenceTranslation"
+                label="Sentence Translation"
+                outlined
+                class="q-mb-md"
+              />
+            </div>
+          </div>
+
+          <div class="text-subtitle2 q-mb-sm">Sentence Breakdown</div>
+
+          <q-table
+            :rows="form.sentenceBreakdown"
+            :columns="breakdownColumns"
+            row-key="word"
+            flat
+            bordered
+            dense
+            :rows-per-page-options="[0]"
+            hide-bottom
+            v-if="form.sentenceBreakdown.length > 0"
+            :table-row-class-fn="rowClass"
           >
-            <q-card>
-              <q-card-section>
-                <div class="row q-col-gutter-md">
-                  <div class="col-12 col-md-6">
-                    <q-input
-                      v-model="form.exampleSentence"
-                      label="Example Sentence"
-                      outlined
-                      class="q-mb-md"
-                    />
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <q-input
-                      v-model="form.sentencePinyin"
-                      label="Sentence Pinyin"
-                      outlined
-                      class="q-mb-md"
-                    />
-                  </div>
-                  <div class="col-12">
-                    <q-input
-                      v-model="form.sentenceTranslation"
-                      label="Sentence Translation"
-                      outlined
-                      class="q-mb-md"
-                    />
-                  </div>
-                </div>
-
-                <div class="text-subtitle2 q-mb-sm">Sentence Breakdown</div>
-
-                <q-table
-                  :rows="form.sentenceBreakdown"
-                  :columns="breakdownColumns"
-                  row-key="word"
-                  flat
-                  bordered
+            <template v-slot:body-cell-actions="props">
+              <q-td :props="props" class="q-gutter-xs">
+                <q-btn
+                  round
                   dense
-                  :rows-per-page-options="[0]"
-                  hide-bottom
-                  v-if="form.sentenceBreakdown.length > 0"
-                  :table-row-class-fn="rowClass"
-                >
-                  <template v-slot:body-cell-actions="props">
-                    <q-td :props="props" class="q-gutter-xs">
-                      <q-btn
-                        round dense flat
-                        :icon="props.row.visible ? 'visibility' : 'visibility_off'"
-                        color="primary"
-                        @click="toggleBreakdownVisibility(props.rowIndex)"
-                      />
-                    </q-td>
-                  </template>
-                </q-table>
-                <div v-else class="text-grey q-mt-sm">
-                  No breakdown available. Use Autofill or add an example
-                  sentence manually.
-                </div>
-              </q-card-section>
-            </q-card>
-          </q-expansion-item>
+                  flat
+                  :icon="props.row.visible ? 'visibility' : 'visibility_off'"
+                  color="primary"
+                  @click="toggleBreakdownVisibility(props.rowIndex)"
+                />
+              </q-td>
+            </template>
+          </q-table>
+          <div v-else class="text-grey q-mt-sm">
+            No breakdown available. Use Autofill or add an example sentence
+            manually.
+          </div>
         </q-form>
       </q-card-section>
 
@@ -145,7 +134,6 @@ const flashcardsStore = useFlashcardsStore();
 const router = useRouter();
 
 const loading = ref(false);
-const exampleSentenceExpanded = ref(false);
 
 const form = ref({
   word: "",
@@ -180,11 +168,12 @@ const breakdownColumns = [
 ];
 
 function rowClass(row) {
-  return row.visible === false ? 'bg-grey-3 text-grey-8' : '';
+  return row.visible === false ? "bg-grey-3 text-grey-8" : "";
 }
 
 function toggleBreakdownVisibility(index) {
-  form.value.sentenceBreakdown[index].visible = !form.value.sentenceBreakdown[index].visible;
+  form.value.sentenceBreakdown[index].visible =
+    !form.value.sentenceBreakdown[index].visible;
 }
 
 async function autofillWithAI() {
@@ -233,13 +222,10 @@ async function autofillWithAI() {
             word: component.word,
             pinyin: component.pinyin,
             meaning: component.translation,
-            visible: true
+            visible: true,
           })
         ),
       };
-      if (form.value.exampleSentence) {
-        exampleSentenceExpanded.value = true;
-      }
     }
     $q.notify({
       color: "positive",

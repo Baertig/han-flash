@@ -1,129 +1,3 @@
-<template>
-  <div class="q-pa-md">
-    <q-card>
-      <q-card-section class="row items-center">
-        <div class="text-h6">New Flashcard</div>
-      </q-card-section>
-
-      <q-card-section class="q-pt-none scroll" style="max-height: 80vh">
-        <q-form @submit.prevent="onSubmit">
-          <div class="row q-col-gutter-md">
-            <div class="col-12 col-md-6">
-              <q-input
-                v-model="form.word"
-                label="Chinese Word/Character *"
-                outlined
-                class="q-mb-md"
-                :rules="[(val) => !!val || 'Word is required']"
-                @keyup.enter.native="autofillWithAI"
-                autofocus
-              >
-                <template v-slot:append>
-                  <q-btn
-                    round
-                    dense
-                    flat
-                    icon="auto_awesome"
-                    color="primary"
-                    :disable="!canAutofill"
-                    :loading="loading"
-                    @click="autofillWithAI"
-                    title="Autofill with AI"
-                  />
-                </template>
-              </q-input>
-            </div>
-
-            <div class="col-12 col-md-6">
-              <q-input
-                v-model="form.pinyin"
-                label="Pinyin"
-                outlined
-                class="q-mb-md"
-                placeholder="e.g. nǐ hǎo"
-              />
-            </div>
-
-            <div class="col-12">
-              <q-input
-                v-model="form.translation"
-                label="Translation *"
-                outlined
-                class="q-mb-md"
-                :rules="[(val) => !!val || 'Translation is required']"
-              />
-            </div>
-          </div>
-
-          <div class="row q-col-gutter-md">
-            <div class="col-12 col-md-6">
-              <q-input
-                v-model="form.exampleSentence"
-                label="Example Sentence"
-                outlined
-                class="q-mb-md"
-              />
-            </div>
-            <div class="col-12 col-md-6">
-              <q-input
-                v-model="form.sentencePinyin"
-                label="Sentence Pinyin"
-                outlined
-                class="q-mb-md"
-              />
-            </div>
-            <div class="col-12">
-              <q-input
-                v-model="form.sentenceTranslation"
-                label="Sentence Translation"
-                outlined
-                class="q-mb-md"
-              />
-            </div>
-          </div>
-
-          <div class="text-subtitle2 q-mb-sm">Sentence Breakdown</div>
-
-          <q-table
-            :rows="form.sentenceBreakdown"
-            :columns="breakdownColumns"
-            row-key="word"
-            flat
-            bordered
-            dense
-            :rows-per-page-options="[0]"
-            hide-bottom
-            v-if="form.sentenceBreakdown.length > 0"
-            :table-row-class-fn="rowClass"
-          >
-            <template v-slot:body-cell-actions="props">
-              <q-td :props="props" class="q-gutter-xs">
-                <q-btn
-                  round
-                  dense
-                  flat
-                  :icon="props.row.visible ? 'visibility' : 'visibility_off'"
-                  color="primary"
-                  @click="toggleBreakdownVisibility(props.rowIndex)"
-                />
-              </q-td>
-            </template>
-          </q-table>
-          <div v-else class="text-grey q-mt-sm">
-            No breakdown available. Use Autofill or add an example sentence
-            manually.
-          </div>
-        </q-form>
-      </q-card-section>
-
-      <q-card-actions align="right">
-        <q-btn flat label="Cancel" color="negative" @click="onCancel" />
-        <q-btn flat label="Save" color="primary" @click="onSubmit" />
-      </q-card-actions>
-    </q-card>
-  </div>
-</template>
-
 <script setup>
 import { ref, computed } from "vue";
 import { useQuasar } from "quasar";
@@ -257,3 +131,129 @@ function onCancel() {
   router.push({ name: "Flashcards" });
 }
 </script>
+
+<template>
+  <div class="q-pa-md">
+    <q-card>
+      <q-card-section class="row items-center">
+        <div class="text-h6">New Flashcard</div>
+      </q-card-section>
+
+      <q-card-section class="q-pt-none scroll" style="max-height: 80vh">
+        <q-form @submit.prevent="onSubmit">
+          <div class="row q-col-gutter-md">
+            <div class="col-12 col-md-6">
+              <q-input
+                v-model="form.word"
+                label="Chinese Word/Character *"
+                outlined
+                class="q-mb-md"
+                :rules="[(val) => !!val || 'Word is required']"
+                @keyup.enter.native="autofillWithAI"
+                autofocus
+              >
+                <template v-slot:append>
+                  <q-btn
+                    round
+                    dense
+                    flat
+                    icon="auto_awesome"
+                    color="primary"
+                    :disable="!canAutofill"
+                    :loading="loading"
+                    @click="autofillWithAI"
+                    title="Autofill with AI"
+                  />
+                </template>
+              </q-input>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <q-input
+                v-model="form.pinyin"
+                label="Pinyin"
+                outlined
+                class="q-mb-md"
+                placeholder="e.g. nǐ hǎo"
+              />
+            </div>
+
+            <div class="col-12">
+              <q-input
+                v-model="form.translation"
+                label="Translation *"
+                outlined
+                class="q-mb-md"
+                :rules="[(val) => !!val || 'Translation is required']"
+              />
+            </div>
+          </div>
+
+          <div class="row q-col-gutter-md">
+            <div class="col-12 col-md-6">
+              <q-input
+                v-model="form.exampleSentence"
+                label="Example Sentence"
+                outlined
+                class="q-mb-md"
+              />
+            </div>
+            <div class="col-12 col-md-6">
+              <q-input
+                v-model="form.sentencePinyin"
+                label="Sentence Pinyin"
+                outlined
+                class="q-mb-md"
+              />
+            </div>
+            <div class="col-12">
+              <q-input
+                v-model="form.sentenceTranslation"
+                label="Sentence Translation"
+                outlined
+                class="q-mb-md"
+              />
+            </div>
+          </div>
+
+          <div class="text-subtitle2 q-mb-sm">Sentence Breakdown</div>
+
+          <q-table
+            :rows="form.sentenceBreakdown"
+            :columns="breakdownColumns"
+            row-key="word"
+            flat
+            bordered
+            dense
+            :rows-per-page-options="[0]"
+            hide-bottom
+            v-if="form.sentenceBreakdown.length > 0"
+            :table-row-class-fn="rowClass"
+          >
+            <template v-slot:body-cell-actions="props">
+              <q-td :props="props" class="q-gutter-xs">
+                <q-btn
+                  round
+                  dense
+                  flat
+                  :icon="props.row.visible ? 'visibility' : 'visibility_off'"
+                  color="primary"
+                  @click="toggleBreakdownVisibility(props.rowIndex)"
+                />
+              </q-td>
+            </template>
+          </q-table>
+          <div v-else class="text-grey q-mt-sm">
+            No breakdown available. Use Autofill or add an example sentence
+            manually.
+          </div>
+        </q-form>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn flat label="Cancel" color="negative" @click="onCancel" />
+        <q-btn flat label="Save" color="primary" @click="onSubmit" />
+      </q-card-actions>
+    </q-card>
+  </div>
+</template>

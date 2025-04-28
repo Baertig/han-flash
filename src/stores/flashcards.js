@@ -22,8 +22,6 @@ export const useFlashcardsStore = defineStore("flashcards", {
             visible: true,
           },
         ],
-        hasAudio: false,
-        hasImage: false,
       },
       {
         id: 2,
@@ -43,8 +41,6 @@ export const useFlashcardsStore = defineStore("flashcards", {
           { word: "你的", pinyin: "nǐ de", meaning: "your", visible: true },
           { word: "帮助", pinyin: "bāng zhù", meaning: "help", visible: true },
         ],
-        hasAudio: false,
-        hasImage: false,
       },
     ],
     nextId: 3,
@@ -76,8 +72,6 @@ export const useFlashcardsStore = defineStore("flashcards", {
               visible: item.visible !== false,
             }))
           : [],
-        hasAudio: false,
-        hasImage: false,
       };
 
       this.flashcards.push(newCard);

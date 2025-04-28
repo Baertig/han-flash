@@ -12,10 +12,15 @@ export const useFlashcardsStore = defineStore("flashcards", {
         sentencePinyin: "nǐ hǎo, wǒ shì xiǎo míng.",
         sentenceTranslation: "Hello, I am Xiao Ming.",
         sentenceBreakdown: [
-          { word: "你好", pinyin: "nǐ hǎo", meaning: "hello" },
-          { word: "我", pinyin: "wǒ", meaning: "I" },
-          { word: "是", pinyin: "shì", meaning: "am" },
-          { word: "小明", pinyin: "xiǎo míng", meaning: "Xiao Ming (name)" },
+          { word: "你好", pinyin: "nǐ hǎo", meaning: "hello", visible: true },
+          { word: "我", pinyin: "wǒ", meaning: "I", visible: true },
+          { word: "是", pinyin: "shì", meaning: "am", visible: true },
+          {
+            word: "小明",
+            pinyin: "xiǎo míng",
+            meaning: "Xiao Ming (name)",
+            visible: true,
+          },
         ],
         hasAudio: false,
         hasImage: false,
@@ -29,9 +34,14 @@ export const useFlashcardsStore = defineStore("flashcards", {
         sentencePinyin: "xiè xiè nǐ de bāng zhù.",
         sentenceTranslation: "Thank you for your help.",
         sentenceBreakdown: [
-          { word: "谢谢", pinyin: "xiè xiè", meaning: "thank you" },
-          { word: "你的", pinyin: "nǐ de", meaning: "your" },
-          { word: "帮助", pinyin: "bāng zhù", meaning: "help" },
+          {
+            word: "谢谢",
+            pinyin: "xiè xiè",
+            meaning: "thank you",
+            visible: true,
+          },
+          { word: "你的", pinyin: "nǐ de", meaning: "your", visible: true },
+          { word: "帮助", pinyin: "bāng zhù", meaning: "help", visible: true },
         ],
         hasAudio: false,
         hasImage: false,
@@ -63,6 +73,7 @@ export const useFlashcardsStore = defineStore("flashcards", {
               word: item.word || "",
               pinyin: item.pinyin || "",
               meaning: item.meaning || "",
+              visible: item.visible !== false,
             }))
           : [],
         hasAudio: false,
@@ -102,7 +113,9 @@ export const useFlashcardsStore = defineStore("flashcards", {
         const front = card.translation || "";
 
         const breakdownString = card.sentenceBreakdown
-          ?.map(
+          // include only visible items
+          .filter((item) => item.visible !== false)
+          .map(
             (item) =>
               `${item.word || ""} (${item.pinyin || ""}) - ${
                 item.meaning || ""

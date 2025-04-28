@@ -69,8 +69,9 @@ const emit = defineEmits(["enhance", "delete"]);
       >
         <q-card>
           <q-card-section>
+            <!-- only show visible breakdown items -->
             <div
-              v-for="(item, index) in sentenceBreakdown"
+              v-for="(item, index) in sentenceBreakdown.filter(i => i.visible !== false)"
               :key="index"
               class="q-mb-xs"
             >

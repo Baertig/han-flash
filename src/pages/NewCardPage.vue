@@ -102,20 +102,15 @@
                   :rows-per-page-options="[0]"
                   hide-bottom
                   v-if="form.sentenceBreakdown.length > 0"
+                  :table-row-class-fn="rowClass"
                 >
                   <template v-slot:body-cell-actions="props">
                     <q-td :props="props" class="q-gutter-xs">
                       <q-btn
-                        round
-                        dense
-                        flat
-                        icon="delete"
-                        color="negative"
-                        @click="
-                          removeBreakdownItem(
-                            form.sentenceBreakdown.indexOf(props.row)
-                          )
-                        "
+                        round dense flat
+                        :icon="props.row.visible ? 'visibility' : 'visibility_off'"
+                        color="primary"
+                        @click="toggleBreakdownVisibility(props.rowIndex)"
                       />
                     </q-td>
                   </template>
@@ -184,8 +179,12 @@ const breakdownColumns = [
   { name: "actions", label: "Actions", field: "actions", align: "center" },
 ];
 
-function removeBreakdownItem(index) {
-  form.value.sentenceBreakdown.splice(index, 1);
+function rowClass(row) {
+  return row.visible === false ? 'bg-grey-3 text-grey-8' : '';
+}
+
+function toggleBreakdownVisibility(index) {
+  form.value.sentenceBreakdown[index].visible = !form.value.sentenceBreakdown[index].visible;
 }
 
 async function autofillWithAI() {
@@ -234,6 +233,7 @@ async function autofillWithAI() {
             word: component.word,
             pinyin: component.pinyin,
             meaning: component.translation,
+            visible: true
           })
         ),
       };

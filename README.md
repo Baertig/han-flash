@@ -10,7 +10,6 @@ Anki Card Creator is designed to streamline the creation of comprehensive flashc
 
 - Create flashcards with Chinese words/characters, pinyin, and translations
 - **AI-powered Autofill**: Automatically fetch pinyin, translation, example sentence (with pinyin and translation), and a detailed sentence breakdown using OpenAI GPT.
-- **Dynamic Dialog**: The new card dialog includes fields for all generated data, allowing user edits.
 - **Sentence Breakdown**: View a word-by-word breakdown of example sentences, including pinyin and meaning.
 - View existing flashcards in a responsive grid layout
 - Add and delete flashcards
@@ -108,6 +107,3 @@ npm run dev
 4. Focus specifically on the challenges of learning Chinese vocabulary
 5. Create Anki-compatible exports for use with the popular spaced repetition software
 
-## License
-
-[MIT License](LICENSE)

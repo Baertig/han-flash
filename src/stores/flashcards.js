@@ -1,4 +1,21 @@
 import { defineStore } from "pinia";
+import { saveAs } from "file-saver";
+import JSZip from "jszip";
+
+// Helper to generate a safe audio filename (with .mp3 extension)
+function generateAudioFilename(card) {
+  // 1. Normalize to NFD form to decompose characters and diacritics
+  // 2. Remove everything except letters, numbers, and whitespace
+  // 3. Replace whitespace sequences with single underscores
+  // 4. Fallback to `audio_{id}` if sentencePinyin is empty or undefined
+  const base =
+    card.sentencePinyin
+      ?.normalize("NFD")
+      .replace(/[^A-Za-z0-9\s]/g, "")
+      .replace(/\s+/g, "_") || `audio_${card.id}`;
+
+  return `${base}.mp3`;
+}
 
 export const useFlashcardsStore = defineStore("flashcards", {
   state: () => ({
@@ -120,29 +137,71 @@ export const useFlashcardsStore = defineStore("flashcards", {
           )
           .join("<br>");
 
+        // Create audio tag if audio exists
+        const audioTag = card.audioUrl
+          ? `[sound:${generateAudioFilename(card)}]`
+          : "";
+
         const back = [
           card.word || "",
           card.pinyin || "",
           "-----",
-          card.exampleSentence || "",
+          `${card.exampleSentence || ""} ${audioTag}`.trim(),
           card.sentencePinyin || "",
           card.sentenceTranslation || "",
           "", // Empty line
           breakdownString || "",
         ].join("<br>");
 
-        // Escape any existing semicolons in fields if necessary, though unlikely here.
-        // For simplicity, we assume fields don't contain semicolons or newlines for now.
         return `${front};${back}`;
       });
 
-      // Add header to allow HTML import in Anki
-      // Although not strictly necessary if the user checks the box,
-      // it's good practice if the format relies on HTML.
-      // Anki doesn't have a specific header for *allowing* HTML,
-      // the user enables it in the import dialog.
-      // We just return the formatted lines.
       return lines.join("\n");
+    },
+
+    // New action to create and trigger download using saveAs
+    downloadAnkiFile() {
+      const ankiText = this.exportToAnkiFormat();
+      if (!ankiText) {
+        return false;
+      }
+      const blob = new Blob([ankiText], { type: "text/plain;charset=utf-8" });
+      saveAs(blob, "anki_export.txt");
+      return true;
+    },
+
+    // New action to download all audio media as a ZIP
+    async downloadMedia() {
+      // Only process flashcards that have an audioUrl
+      const cardsWithAudio = this.flashcards.filter((card) => card.audioUrl);
+
+      if (!cardsWithAudio.length) {
+        return false;
+      }
+
+      const zip = new JSZip();
+      for (const card of cardsWithAudio) {
+        try {
+          const response = await fetch(card.audioUrl);
+          const arrayBuffer = await response.arrayBuffer();
+
+          // Use helper to generate the audio filename
+          const filename = generateAudioFilename(card);
+          zip.file(filename, arrayBuffer);
+        } catch (e) {
+          console.error("Error fetching audio for card", card.id, e);
+        }
+      }
+
+      try {
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        saveAs(zipBlob, "flashcards_media.zip");
+
+        return true;
+      } catch (e) {
+        console.error("Error creating zip", e);
+        return false;
+      }
     },
   },
 });

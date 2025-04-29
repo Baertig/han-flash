@@ -12,28 +12,20 @@ const router = useRouter();
 // Using storeToRefs to maintain reactivity
 const { flashcards } = storeToRefs(flashcardsStore);
 
-// Function to trigger download
+// Simplified download logic: delegate to store action
 const downloadAnkiFile = () => {
-  const ankiText = flashcardsStore.exportToAnkiFormat();
-  if (!ankiText) {
-    $q.notify({
-      message: 'No flashcards available to export.',
-      color: 'warning',
-      icon: 'warning',
-      position: 'top'
-    });
-    return;
+  const success = flashcardsStore.downloadAnkiFile();
+  if (!success) {
+    $q.notify({ message: 'No flashcards available to export.', color: 'warning', icon: 'warning', position: 'top' });
   }
+};
 
-  const blob = new Blob([ankiText], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'anki_export.txt'; // Filename for the download
-  document.body.appendChild(link); // Required for Firefox
-  link.click();
-  document.body.removeChild(link); // Clean up
-  URL.revokeObjectURL(url); // Free up memory
+// New handler to download all audio media
+const downloadMedia = async () => {
+  const success = await flashcardsStore.downloadMedia();
+  if (!success) {
+    $q.notify({ message: 'No media available to download.', color: 'warning', icon: 'warning', position: 'top' });
+  }
 };
 
 // Navigate to new card page
@@ -67,7 +59,15 @@ function deleteFlashcard(id) {
         icon="download"
         label="Export for Anki"
         @click="downloadAnkiFile"
-        :disable="flashcards.length === 0" 
+        :disable="flashcards.length === 0"
+      />
+      <q-btn
+        color="secondary"
+        icon="music_note"
+        label="Download Media"
+        class="q-ml-sm"
+        @click="downloadMedia"
+        :disable="flashcards.length === 0"
       />
     </div>
 

@@ -1,0 +1,21 @@
+{
+    "name": "chinese_word_image_ideas",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "ideas": {
+                "type": "array",
+                "description": "List of 3 to 5 image ideas that help the user to rember the chinese word.",
+                "items": {
+                    "type": "string",
+                    "description": "A textual description or prompt for an image idea."
+                }
+            }
+        },
+        "required": [
+            "ideas"
+        ],
+        "additionalProperties": false
+    },
+    "strict": true
+}

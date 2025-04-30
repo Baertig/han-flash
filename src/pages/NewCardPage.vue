@@ -2,6 +2,7 @@
 import { ref, computed } from "vue";
 import { useQuasar } from "quasar";
 import translationSchema from "../service/gpt_translation_schema.json";
+import imageIdeasSchema from "../service/gpt_image_ideas_schema.json";
 import { useFlashcardsStore } from "../stores/flashcards";
 import { useRouter } from "vue-router";
 
@@ -11,6 +12,8 @@ const router = useRouter();
 
 const loading = ref(false);
 const loadingAudio = ref(false);
+const loadingIdeas = ref(false);
+const loadingImageGeneration = ref({}) //idx : loading
 
 const form = ref({
   word: "",
@@ -23,8 +26,20 @@ const form = ref({
   audioUrl: "",
 });
 
+const imagePrompts = ref([""]);
+const imageResults = ref([]);
+
 const canAutofill = computed(() => !!form.value.word.trim());
 const canGenerateAudio = computed(() => !!form.value.exampleSentence.trim());
+const canGenerateImageIdeas = computed(() => !!form.value.word.trim());
+
+const carouselItems = computed(() =>
+  imageResults.value
+    .map((url, index) => ({ url, prompt: imagePrompts.value[index] }))
+    .filter((item) => item.url)
+);
+
+const carouselModel = ref(0);
 
 const breakdownColumns = [
   {
@@ -106,11 +121,7 @@ async function autofillWithAI() {
         ),
       };
     }
-    $q.notify({
-      color: "positive",
-      message: "Card info fetched successfully",
-      icon: "check",
-    });
+
   } catch (error) {
     console.error("Error fetching from OpenAI:", error);
     $q.notify({
@@ -137,19 +148,17 @@ async function generateAudio() {
       body: JSON.stringify({
         model: "gpt-4o-mini-tts",
         input: form.value.exampleSentence,
-        instructions: "请说得清楚、友好，而且发音要准确。特别注意语调的准确性。",
+        instructions:
+          "请说得清楚、友好，而且发音要准确。特别注意语调的准确性。",
         voice: "ash",
         response_format: "mp3",
       }),
     });
+
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
     form.value.audioUrl = url;
-    $q.notify({
-      color: "positive",
-      message: "Audio generated successfully",
-      icon: "volume_up",
-    });
+
   } catch (error) {
     console.error("Error generating audio:", error);
     $q.notify({
@@ -159,6 +168,88 @@ async function generateAudio() {
     });
   } finally {
     loadingAudio.value = false;
+  }
+}
+
+async function generateImage(prompt, index) {
+  if (!prompt) return;
+
+  loadingImageGeneration.value = {...loadingImageGeneration.value , [index]: true }
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt,
+        n: 1,
+        size: "1024x1024",
+      }),
+    });
+    const json = await res.json();
+    if (json.data?.[0]?.url) {
+      imageResults.value[index] = json.data[0].url;
+    }
+  } catch (error) {
+    console.error("Error generating image:", error);
+    $q.notify({
+      color: "negative",
+      message: "Failed to generate image",
+      icon: "error",
+    });
+  } finally {
+    loadingImageGeneration.value = {...loadingImageGeneration.value, [index]: false}
+  }
+}
+
+async function generateIdeasWithAI() {
+  if (!form.value.word) return;
+  loadingIdeas.value = true;
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an assistant that generates image ideas to help remember a Chinese word. Respond with a JSON object following the provided schema.",
+          },
+          {
+            role: "user",
+            content: `Generate image descriptions that will help remember the Chinese word \"${form.value.word}\". I want to include these images in my flashcards so that they provide a visual clue for me when learning.`,
+          },
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: imageIdeasSchema,
+        },
+      }),
+    });
+    const data = await response.json();
+    if (data.choices?.[0]?.message?.content) {
+      const result = JSON.parse(data.choices[0].message.content);
+      imagePrompts.value = imagePrompts.value.concat(result.ideas);
+      imageResults.value = Array(result.ideas.length).fill(null);
+    }
+  } catch (err) {
+    console.error("Error generating image ideas:", err);
+    $q.notify({
+      color: "negative",
+      message: "Failed to generate image ideas",
+      icon: "error",
+    });
+  } finally {
+    loadingIdeas.value = false;
   }
 }
 
@@ -181,7 +272,7 @@ function onCancel() {
         <div class="text-h6">New Flashcard</div>
       </q-card-section>
 
-      <q-card-section class="q-pt-none scroll" style="max-height: 80vh">
+      <q-card-section class="q-pt-none">
         <q-form @submit.prevent="onSubmit">
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
@@ -308,6 +399,71 @@ function onCancel() {
             <audio controls :src="form.audioUrl" />
           </div>
         </q-form>
+      </q-card-section>
+
+      <q-card-section>
+        <!-- Image Generation Section -->
+        <div class="text-subtitle2 q-mt-md">Image Generation</div>
+
+        <div
+          v-for="(prompt, index) in imagePrompts"
+          :key="index"
+          class="row q-col-gutter-md q-mb-sm"
+        >
+          <div class="col-10">
+            <q-input
+              v-model="imagePrompts[index]"
+              label="Image Prompt"
+              outlined
+            />
+          </div>
+
+          <div class="col-2 flex items-center">
+            <q-btn
+              flat
+              icon="image"
+              color="primary"
+              @click="generateImage(imagePrompts[index], index)"
+              :loading="loadingImageGeneration[index]"
+              title="Generate image"
+            />
+          </div>
+        </div>
+
+        <q-btn
+          flat
+          label="Generate Ideas with AI"
+          :disable="!canGenerateImageIdeas"
+          :loading="loadingIdeas"
+          @click="generateIdeasWithAI"
+        />
+
+        <div v-if="carouselItems.length" class="q-mt-md">
+          <div class="text-subtitle2">Image Preview</div>
+          <q-carousel
+            v-model="carouselModel"
+            animated
+            arrows
+            control-color="primary"
+            control-icon-color="primary"
+          >
+            <q-carousel-slide
+              v-for="(item, idx) in carouselItems"
+              :key="idx"
+              :name="idx"
+            >
+              <div class="flex column items-center">
+                <q-img height="512px" width="512px" :src="item.url" />
+              </div>
+
+              <div
+                class="text-center q-pa-xs"
+              >
+                {{ item.prompt }}
+              </div>
+            </q-carousel-slide>
+          </q-carousel>
+        </div>
       </q-card-section>
 
       <q-card-actions align="right">

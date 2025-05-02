@@ -1,16 +1,18 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useQuasar } from "quasar";
-import translationSchema from "../service/gpt_translation_schema.json";
-import imageIdeasSchema from "../service/gpt_image_ideas_schema.json";
-import { useFlashcardsStore } from "../stores/flashcards";
 import { useRouter } from "vue-router";
+
+import { useFlashcardsStore } from "../stores/flashcards";
+import translationSchema from "../service/gpt-translation-schema.json";
+import imageIdeasSchema from "../service/gpt-image-ideas-schema.json";
+import { generateChineseAudio, generateEnglishToChineseCardTextConent, generateImage as generateImageClient, generateImageIdeas } from "../service/openai-client";
 
 const $q = useQuasar();
 const flashcardsStore = useFlashcardsStore();
 const router = useRouter();
 
-const loading = ref(false);
+const loadingAutoFill = ref(false);
 const loadingAudio = ref(false);
 const loadingIdeas = ref(false);
 const loadingImageGeneration = ref({}) //idx : loading
@@ -72,39 +74,11 @@ function toggleBreakdownVisibility(index) {
 
 async function autofillWithAI() {
   if (!form.value.word) return;
-  loading.value = true;
+  loadingAutoFill.value = true;
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a helpful assistant that provides Chinese language translations and example sentences. Respond with a JSON object following the provided schema.",
-          },
-          {
-            role: "user",
-            content: `Translate the Chinese word "${form.value.word}" and provide details.`,
-          },
-        ],
-        response_format: {
-          type: "json_schema",
-          json_schema: translationSchema,
-        },
-      }),
-    });
+    const result = await generateEnglishToChineseCardTextConent(form.value.word);
 
-    const data = await response.json();
-
-    if (data.choices && data.choices[0]?.message?.content) {
-      const result = JSON.parse(data.choices[0].message.content);
-      form.value = {
+    form.value = {
         ...form.value,
         pinyin: result.pinyin,
         translation: result.translation,
@@ -120,17 +94,16 @@ async function autofillWithAI() {
           })
         ),
       };
-    }
-
-  } catch (error) {
+    } catch (error) {
     console.error("Error fetching from OpenAI:", error);
+
     $q.notify({
       color: "negative",
       message: "Failed to fetch translation data",
       icon: "error",
     });
   } finally {
-    loading.value = false;
+    loadingAutoFill.value = false;
   }
 }
 
@@ -138,29 +111,10 @@ async function generateAudio() {
   if (!form.value.exampleSentence) return;
   loadingAudio.value = true;
   try {
-    const response = await fetch("https://api.openai.com/v1/audio/speech", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-        Accept: "audio/mpeg",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini-tts",
-        input: form.value.exampleSentence,
-        instructions:
-          "请说得清楚、友好，而且发音要准确。特别注意语调的准确性。",
-        voice: "ash",
-        response_format: "mp3",
-      }),
-    });
-
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    form.value.audioUrl = url;
-
+    form.value.audioUrl = await generateChineseAudio(form.value.exampleSentence);
   } catch (error) {
     console.error("Error generating audio:", error);
+
     $q.notify({
       color: "negative",
       message: "Failed to generate audio",
@@ -173,36 +127,15 @@ async function generateAudio() {
 
 async function generateImage(prompt, index) {
   if (!prompt) return;
-
-  loadingImageGeneration.value = {...loadingImageGeneration.value , [index]: true }
-
+  loadingImageGeneration.value = { ...loadingImageGeneration.value, [index]: true };
   try {
-    const res = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "dall-e-3",
-        prompt,
-        n: 1,
-        size: "1024x1024",
-      }),
-    });
-    const json = await res.json();
-    if (json.data?.[0]?.url) {
-      imageResults.value[index] = json.data[0].url;
-    }
+    const url = await generateImageClient(prompt);
+    imageResults.value[index] = url;
   } catch (error) {
     console.error("Error generating image:", error);
-    $q.notify({
-      color: "negative",
-      message: "Failed to generate image",
-      icon: "error",
-    });
+    $q.notify({ color: "negative", message: "Failed to generate image", icon: "error" });
   } finally {
-    loadingImageGeneration.value = {...loadingImageGeneration.value, [index]: false}
+    loadingImageGeneration.value = { ...loadingImageGeneration.value, [index]: false };
   }
 }
 
@@ -210,44 +143,13 @@ async function generateIdeasWithAI() {
   if (!form.value.word) return;
   loadingIdeas.value = true;
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an assistant that generates image ideas to help remember a Chinese word. Respond with a JSON object following the provided schema.",
-          },
-          {
-            role: "user",
-            content: `Generate image descriptions that will help remember the Chinese word \"${form.value.word}\". I want to include these images in my flashcards so that they provide a visual clue for me when learning.`,
-          },
-        ],
-        response_format: {
-          type: "json_schema",
-          json_schema: imageIdeasSchema,
-        },
-      }),
-    });
-    const data = await response.json();
-    if (data.choices?.[0]?.message?.content) {
-      const result = JSON.parse(data.choices[0].message.content);
-      imagePrompts.value = imagePrompts.value.concat(result.ideas);
-      imageResults.value = Array(result.ideas.length).fill(null);
-    }
+    const ideas = await generateImageIdeas(form.value.word);
+
+    imagePrompts.value = imagePrompts.value.concat(ideas);
+    imageResults.value = Array(ideas.length).fill(null);
   } catch (err) {
     console.error("Error generating image ideas:", err);
-    $q.notify({
-      color: "negative",
-      message: "Failed to generate image ideas",
-      icon: "error",
-    });
+    $q.notify({ color: "negative", message: "Failed to generate image ideas", icon: "error" });
   } finally {
     loadingIdeas.value = false;
   }
@@ -293,7 +195,7 @@ function onCancel() {
                     icon="auto_awesome"
                     color="primary"
                     :disable="!canAutofill"
-                    :loading="loading"
+                    :loading="loadingAutoFill"
                     @click="autofillWithAI"
                     title="Autofill with AI"
                   />

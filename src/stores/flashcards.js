@@ -15,17 +15,13 @@ function normalizePinyin(pinyin) {
 function generateAudioFilename(card) {
   const base = normalizePinyin(card.sentencePinyin) || `audio_${card.id}`;
 
-  const ext = card.audioUrl.split(".").at(-1) || "mp3";
-
-  return `${base}.${ext}`;
+  return `${base}.mp3`;
 }
 
 function generateImageFilename(card) {
   const base = normalizePinyin(card.pinyin) || `image_${card.id}`;
 
-  const ext = card.imageUrl.split(".").at(-1) || "png";
-
-  return `${base}.${ext}`;
+  return `${base}.jpg`;
 }
 
 export const useFlashcardsStore = defineStore("flashcards", {

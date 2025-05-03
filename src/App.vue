@@ -1,14 +1,12 @@
 <script setup>
-import { RouterView } from 'vue-router'
+import { RouterView } from "vue-router";
 </script>
 
 <template>
   <q-layout view="hHh lpR fFf">
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
-        <q-toolbar-title>
-          Anki Card Creator
-        </q-toolbar-title>
+        <q-toolbar-title>HanFlash</q-toolbar-title>
       </q-toolbar>
     </q-header>
 
@@ -21,7 +19,7 @@ import { RouterView } from 'vue-router'
 <style>
 /* Global styles */
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   background-color: #f5f5f5;
 }
 </style>

@@ -11,20 +11,16 @@ Anki Card Creator is designed to streamline the creation of comprehensive flashc
 - Create flashcards with Chinese words/characters, pinyin, and translations
 - **AI-powered Autofill**: Automatically fetch pinyin, translation, example sentence (with pinyin and translation), and a detailed sentence breakdown using OpenAI GPT.
 - **Sentence Breakdown**: View a word-by-word breakdown of example sentences, including pinyin and meaning.
-- View existing flashcards in a responsive grid layout
-- Add and delete flashcards
-- **Expandable Sections**: Example sentence and breakdown sections automatically expand when populated.
-- **Anki Export**: Export all current flashcards to a `.txt` file suitable for importing into Anki. The format uses HTML line breaks (`<br>`) and separates front/back fields with a semicolon.
-  - _Front_: Translation
-  - _Back_: Word, Pinyin, Example Sentence (with Pinyin & Translation), Sentence Breakdown.
+- **Image Generation & Selection**: Generate images for each card prompt, display as selectable thumbnails, highlight selected image with primary border.
+- **Media Download**: Download audio and selected image files as a ZIP pack; filenames are derived from card pinyin for easy Anki import.
+- **Anki Export (Updated)**: Front side now includes an `<img>` tag above the translation when an image is attached, and the back side embeds the example sentence audio using `[sound:filename]`. Both image and audio filenames are auto-generated from the card’s pinyin to match the exported Anki media files.
 - **Text-to-Speech**: Generate audio for example sentences using OpenAI TTS and play it directly within the flashcard.
 
 ## Planned Features
 
 - Ability to edit existing flashcards
-- Ability to enter an english word an let gpt fill out the rest.
+- Ability to enter an English word and let GPT fill out the rest.
 - Add keyboard shortcuts
-- Image generation using DALL-E or similar services to provide visual context
 - Data persistence
 
 ## Technologies Used
@@ -69,6 +65,7 @@ Each flashcard contains:
     }
   ],
   audioUrl: String,           // URL of generated pronunciation audio for the example sentence
+  imageUrl: String,           // URL of selected image for the card
 }
 ```
 
@@ -106,4 +103,3 @@ npm run dev
 3. Support multiple media types (text, audio, images) for comprehensive learning
 4. Focus specifically on the challenges of learning Chinese vocabulary
 5. Create Anki-compatible exports for use with the popular spaced repetition software
-

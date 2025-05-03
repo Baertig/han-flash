@@ -9,7 +9,7 @@ export const openAiClient = axios.create({
 
 const TEXT_MODEL = "gpt-4o";
 const AUDIO_MODEL = "gpt-4o-mini-tts";
-const IMAGE_MODEL = "dall-e-3";
+const IMAGE_MODEL = "gpt-image-1";
 
 export async function generateEnglishToChineseCardTextConent(chineseWord) {
   const { data } = await openAiClient.post("/chat/completions", {
@@ -60,16 +60,27 @@ export async function generateChineseAudio(text) {
   return url;
 }
 
-// New function to generate an image using the OpenAI Image API
 export async function generateImage(prompt) {
   const { data } = await openAiClient.post("/images/generations", {
     model: IMAGE_MODEL,
     prompt,
     n: 1,
     size: "1024x1024",
+    output_format: "jpeg",
   });
 
-  return data.data[0].url;
+  const b64 = data.data[0].b64_json;
+  const binary = atob(b64);
+
+  const array = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    array[i] = binary.charCodeAt(i);
+  }
+
+  const blob = new Blob([array], { type: "image/png" });
+  const url = URL.createObjectURL(blob);
+
+  return url;
 }
 
 // New function to generate image ideas using chat completions with JSON schema

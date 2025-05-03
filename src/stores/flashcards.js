@@ -1,20 +1,31 @@
 import { defineStore } from "pinia";
 import { saveAs } from "file-saver";
 import JSZip from "jszip";
+import axios from "axios";
 
-// Helper to generate a safe audio filename (with .mp3 extension)
-function generateAudioFilename(card) {
+function normalizePinyin(pinyin) {
   // 1. Normalize to NFD form to decompose characters and diacritics
   // 2. Remove everything except letters, numbers, and whitespace
   // 3. Replace whitespace sequences with single underscores
-  // 4. Fallback to `audio_{id}` if sentencePinyin is empty or undefined
-  const base =
-    card.sentencePinyin
-      ?.normalize("NFD")
-      .replace(/[^A-Za-z0-9\s]/g, "")
-      .replace(/\s+/g, "_") || `audio_${card.id}`;
+  return pinyin
+    ?.normalize("NFD")
+    .replace(/[^A-Za-z0-9\s]/g, "")
+    .replace(/\s+/g, "_");
+}
+function generateAudioFilename(card) {
+  const base = normalizePinyin(card.sentencePinyin) || `audio_${card.id}`;
 
-  return `${base}.mp3`;
+  const ext = card.audioUrl.split(".").at(-1) || "mp3";
+
+  return `${base}.${ext}`;
+}
+
+function generateImageFilename(card) {
+  const base = normalizePinyin(card.pinyin) || `image_${card.id}`;
+
+  const ext = card.imageUrl.split(".").at(-1) || "png";
+
+  return `${base}.${ext}`;
 }
 
 export const useFlashcardsStore = defineStore("flashcards", {
@@ -40,6 +51,7 @@ export const useFlashcardsStore = defineStore("flashcards", {
           },
         ],
         audioUrl: "",
+        imageUrl: "",
       },
       {
         id: 2,
@@ -60,6 +72,7 @@ export const useFlashcardsStore = defineStore("flashcards", {
           { word: "帮助", pinyin: "bāng zhù", meaning: "help", visible: true },
         ],
         audioUrl: "",
+        imageUrl: "",
       },
     ],
     nextId: 3,
@@ -67,9 +80,14 @@ export const useFlashcardsStore = defineStore("flashcards", {
 
   getters: {
     getFlashcards: (state) => state.flashcards,
+
     getFlashcardById: (state) => (id) =>
       state.flashcards.find((card) => card.id === id),
+
     totalFlashcards: (state) => state.flashcards.length,
+
+    isMediaAvailable: (state) =>
+      state.flashcards.some((card) => card.audioUrl || card.imageUrl),
   },
 
   actions: {
@@ -92,6 +110,7 @@ export const useFlashcardsStore = defineStore("flashcards", {
             }))
           : [],
         audioUrl: cardData.audioUrl || "",
+        imageUrl: cardData.imageUrl || "",
       };
 
       this.flashcards.push(newCard);
@@ -124,7 +143,10 @@ export const useFlashcardsStore = defineStore("flashcards", {
 
     exportToAnkiFormat() {
       const lines = this.flashcards.map((card) => {
-        const front = card.translation || "";
+        const imageTag = card.imageUrl
+          ? `<img src="${generateImageFilename(card)}"><br>`
+          : "";
+        const front = `${imageTag}${card.translation || ""}`;
 
         const breakdownString = card.sentenceBreakdown
           // include only visible items
@@ -182,14 +204,29 @@ export const useFlashcardsStore = defineStore("flashcards", {
       const zip = new JSZip();
       for (const card of cardsWithAudio) {
         try {
-          const response = await fetch(card.audioUrl);
-          const arrayBuffer = await response.arrayBuffer();
+          const { data } = await axios.get(card.audioUrl, {
+            responseType: "arraybuffer",
+          });
 
-          // Use helper to generate the audio filename
           const filename = generateAudioFilename(card);
-          zip.file(filename, arrayBuffer);
+          zip.file(filename, data);
         } catch (e) {
           console.error("Error fetching audio for card", card.id, e);
+        }
+      }
+
+      // Also include images in the zip
+      const cardsWithImages = this.flashcards.filter((card) => card.imageUrl);
+      for (const card of cardsWithImages) {
+        try {
+          const { data } = await axios.get(card.imageUrl, {
+            responseType: "arraybuffer",
+          });
+
+          const filename = generateImageFilename(card);
+          zip.file(filename, data);
+        } catch (e) {
+          console.error("Error fetching image for card", card.id, e);
         }
       }
 

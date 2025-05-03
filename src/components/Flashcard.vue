@@ -34,6 +34,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  imageUrl: {
+    type: String,
+    default: "",
+  },
 });
 
 // Emits for actions
@@ -42,9 +46,12 @@ const emit = defineEmits(["enhance", "delete"]);
 // reference to hidden audio element
 const audioRef = ref(null);
 // update audio src when prop changes
-watch(() => props.audioUrl, src => {
-  if (audioRef.value && src) audioRef.value.src = src;
-});
+watch(
+  () => props.audioUrl,
+  (src) => {
+    if (audioRef.value && src) audioRef.value.src = src;
+  }
+);
 // play audio on button click
 function playAudio() {
   if (audioRef.value) audioRef.value.play();
@@ -66,9 +73,24 @@ function playAudio() {
 
     <q-card-section v-if="exampleSentence" class="q-pt-none">
       <q-separator class="q-mb-sm" />
-      <div class="text-body1">{{ exampleSentence }}</div>
-      <div class="text-caption text-primary q-mb-sm">{{ sentencePinyin }}</div>
-      <div class="text-caption">{{ sentenceTranslation }}</div>
+
+      <div class="row justify-between">
+        <div class="col">
+          <div class="text-body1">{{ exampleSentence }}</div>
+          <div class="text-caption text-primary q-mb-sm">
+            {{ sentencePinyin }}
+          </div>
+          <div class="text-caption">{{ sentenceTranslation }}</div>
+        </div>
+
+        <q-img
+          v-if="imageUrl"
+          width="100px"
+          heigth="100px"
+          :src="imageUrl"
+          class="rounded-borders col-auto"
+        />
+      </div>
 
       <q-expansion-item
         v-if="sentenceBreakdown && sentenceBreakdown.length > 0"
@@ -81,7 +103,9 @@ function playAudio() {
           <q-card-section>
             <!-- only show visible breakdown items -->
             <div
-              v-for="(item, index) in sentenceBreakdown.filter(i => i.visible !== false)"
+              v-for="(item, index) in sentenceBreakdown.filter(
+                (i) => i.visible !== false
+              )"
               :key="index"
               class="q-mb-xs"
             >
@@ -114,8 +138,13 @@ function playAudio() {
 
       <q-space />
 
-      <q-btn v-if="!!props.audioUrl" flat color="primary" icon="volume_up" @click="playAudio" />
+      <q-btn
+        v-if="!!props.audioUrl"
+        flat
+        color="primary"
+        icon="volume_up"
+        @click="playAudio"
+      />
     </q-card-actions>
   </q-card>
 </template>
-

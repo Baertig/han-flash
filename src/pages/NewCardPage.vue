@@ -6,7 +6,12 @@ import { useRouter } from "vue-router";
 import { useFlashcardsStore } from "../stores/flashcards";
 import translationSchema from "../service/gpt-translation-schema.json";
 import imageIdeasSchema from "../service/gpt-image-ideas-schema.json";
-import { generateChineseAudio, generateEnglishToChineseCardTextConent, generateImage as generateImageClient, generateImageIdeas } from "../service/openai-client";
+import {
+  generateChineseAudio,
+  generateEnglishToChineseCardTextConent,
+  generateImage as generateImageClient,
+  generateImageIdeas,
+} from "../service/openai-client";
 
 const $q = useQuasar();
 const flashcardsStore = useFlashcardsStore();
@@ -15,7 +20,7 @@ const router = useRouter();
 const loadingAutoFill = ref(false);
 const loadingAudio = ref(false);
 const loadingIdeas = ref(false);
-const loadingImageGeneration = ref({}) //idx : loading
+const loadingImageGeneration = ref({}); //idx : loading
 
 const form = ref({
   word: "",
@@ -26,6 +31,7 @@ const form = ref({
   sentenceTranslation: "",
   sentenceBreakdown: [],
   audioUrl: "",
+  imageUrl: "",
 });
 
 const imagePrompts = ref([""]);
@@ -76,25 +82,27 @@ async function autofillWithAI() {
   if (!form.value.word) return;
   loadingAutoFill.value = true;
   try {
-    const result = await generateEnglishToChineseCardTextConent(form.value.word);
+    const result = await generateEnglishToChineseCardTextConent(
+      form.value.word
+    );
 
     form.value = {
-        ...form.value,
-        pinyin: result.pinyin,
-        translation: result.translation,
-        exampleSentence: result.example_sentence,
-        sentencePinyin: result.example_sentence_pinyin,
-        sentenceTranslation: result.example_sentence_translation,
-        sentenceBreakdown: result.sentence_breakdown.components.map(
-          (component) => ({
-            word: component.word,
-            pinyin: component.pinyin,
-            meaning: component.translation,
-            visible: true,
-          })
-        ),
-      };
-    } catch (error) {
+      ...form.value,
+      pinyin: result.pinyin,
+      translation: result.translation,
+      exampleSentence: result.example_sentence,
+      sentencePinyin: result.example_sentence_pinyin,
+      sentenceTranslation: result.example_sentence_translation,
+      sentenceBreakdown: result.sentence_breakdown.components.map(
+        (component) => ({
+          word: component.word,
+          pinyin: component.pinyin,
+          meaning: component.translation,
+          visible: true,
+        })
+      ),
+    };
+  } catch (error) {
     console.error("Error fetching from OpenAI:", error);
 
     $q.notify({
@@ -111,7 +119,9 @@ async function generateAudio() {
   if (!form.value.exampleSentence) return;
   loadingAudio.value = true;
   try {
-    form.value.audioUrl = await generateChineseAudio(form.value.exampleSentence);
+    form.value.audioUrl = await generateChineseAudio(
+      form.value.exampleSentence
+    );
   } catch (error) {
     console.error("Error generating audio:", error);
 
@@ -127,15 +137,25 @@ async function generateAudio() {
 
 async function generateImage(prompt, index) {
   if (!prompt) return;
-  loadingImageGeneration.value = { ...loadingImageGeneration.value, [index]: true };
+  loadingImageGeneration.value = {
+    ...loadingImageGeneration.value,
+    [index]: true,
+  };
   try {
     const url = await generateImageClient(prompt);
     imageResults.value[index] = url;
   } catch (error) {
     console.error("Error generating image:", error);
-    $q.notify({ color: "negative", message: "Failed to generate image", icon: "error" });
+    $q.notify({
+      color: "negative",
+      message: "Failed to generate image",
+      icon: "error",
+    });
   } finally {
-    loadingImageGeneration.value = { ...loadingImageGeneration.value, [index]: false };
+    loadingImageGeneration.value = {
+      ...loadingImageGeneration.value,
+      [index]: false,
+    };
   }
 }
 
@@ -149,7 +169,11 @@ async function generateIdeasWithAI() {
     imageResults.value = Array(ideas.length).fill(null);
   } catch (err) {
     console.error("Error generating image ideas:", err);
-    $q.notify({ color: "negative", message: "Failed to generate image ideas", icon: "error" });
+    $q.notify({
+      color: "negative",
+      message: "Failed to generate image ideas",
+      icon: "error",
+    });
   } finally {
     loadingIdeas.value = false;
   }
@@ -316,6 +340,7 @@ function onCancel() {
             <q-input
               v-model="imagePrompts[index]"
               label="Image Prompt"
+              autogrow
               outlined
             />
           </div>
@@ -342,29 +367,57 @@ function onCancel() {
 
         <div v-if="carouselItems.length" class="q-mt-md">
           <div class="text-subtitle2">Image Preview</div>
-          <q-carousel
-            v-model="carouselModel"
-            animated
-            arrows
-            control-color="primary"
-            control-icon-color="primary"
-          >
+          <q-carousel v-model="carouselModel" animated height="480px">
             <q-carousel-slide
               v-for="(item, idx) in carouselItems"
               :key="idx"
               :name="idx"
             >
-              <div class="flex column items-center">
-                <q-img height="512px" width="512px" :src="item.url" />
-              </div>
+              <div class="row justify-between" style="gap: 16px">
+                <q-img
+                  class="col"
+                  height="400px"
+                  width="400px"
+                  :src="item.url"
+                />
 
-              <div
-                class="text-center q-pa-xs"
-              >
-                {{ item.prompt }}
+                <div class="text-center q-pa-xs col">
+                  {{ item.prompt }}
+                </div>
               </div>
             </q-carousel-slide>
           </q-carousel>
+
+          <div class="row q-pt-md" style="gap: 16px">
+            <div
+              v-for="(item, idx) in carouselItems"
+              class="col relative-position"
+              style="max-width: 80px"
+            >
+              <q-img
+                height="80px"
+                width="80px"
+                :src="item.url"
+                @click="carouselModel = idx"
+                :class="[
+                  'rounded-borders',
+                  {
+                    'highlighted': idx === carouselModel,
+                  },
+                ]"
+              >
+              </q-img>
+
+              <q-checkbox
+                :model-value="form.imageUrl === item.url"
+                @update:model-value="
+                  (val) => (form.imageUrl = val ? item.url : '')
+                "
+                class="absolute absolute-bottom-right"
+                size="sm"
+              />
+            </div>
+          </div>
         </div>
       </q-card-section>
 
@@ -375,3 +428,12 @@ function onCancel() {
     </q-card>
   </div>
 </template>
+
+<style lang="scss">
+.highlighted {
+  border-color: $primary;
+  border-style: solid;
+  background-color: $primary;
+  border-width: 4px;
+}
+</style>

@@ -10,7 +10,7 @@ const flashcardsStore = useFlashcardsStore();
 const router = useRouter();
 
 // Using storeToRefs to maintain reactivity
-const { flashcards } = storeToRefs(flashcardsStore);
+const { flashcards, isMediaAvailable } = storeToRefs(flashcardsStore);
 
 // Simplified download logic: delegate to store action
 const downloadAnkiFile = () => {
@@ -20,11 +20,17 @@ const downloadAnkiFile = () => {
   }
 };
 
-// New handler to download all audio media
+// New handler to download all media (audio or image)
 const downloadMedia = async () => {
-  const success = await flashcardsStore.downloadMedia();
-  if (!success) {
+  if (!isMediaAvailable.value) {
     $q.notify({ message: 'No media available to download.', color: 'warning', icon: 'warning', position: 'top' });
+    return;
+  }
+
+  const success = await flashcardsStore.downloadMedia();
+
+  if (!success) {
+    $q.notify({ message: 'Failed to download media.', color: 'negative', icon: 'error', position: 'top' });
   }
 };
 
@@ -67,7 +73,7 @@ function deleteFlashcard(id) {
         label="Download Media"
         class="q-ml-sm"
         @click="downloadMedia"
-        :disable="flashcards.length === 0"
+        :disable="!isMediaAvailable"
       />
     </div>
 
@@ -91,6 +97,7 @@ function deleteFlashcard(id) {
           :sentence-translation="card.sentenceTranslation"
           :sentence-breakdown="card.sentenceBreakdown"
           :audio-url="card.audioUrl"
+          :image-url="card.imageUrl"
           @enhance="enhanceFlashcard(card.id)"
           @delete="deleteFlashcard(card.id)"
         />

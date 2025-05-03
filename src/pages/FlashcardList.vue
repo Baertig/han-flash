@@ -1,13 +1,16 @@
 <script setup>
 import { useQuasar } from "quasar";
 import { storeToRefs } from "pinia";
+import { useRouter } from "vue-router";
+import { onKeyStroke } from "@vueuse/core";
+
 import Flashcard from "../components/Flashcard.vue";
 import { useFlashcardsStore } from "../stores/flashcards";
-import { useRouter } from "vue-router";
 
 const $q = useQuasar();
 const flashcardsStore = useFlashcardsStore();
 const router = useRouter();
+
 
 // Using storeToRefs to maintain reactivity
 const { flashcards, isMediaAvailable } = storeToRefs(flashcardsStore);
@@ -53,6 +56,13 @@ function editFlashcard(id) {
 function deleteFlashcard(id) {
   flashcardsStore.deleteFlashcard(id);
 }
+
+onKeyStroke('n', (e) => {
+  e.preventDefault()
+
+  goToNewCard();
+})
+
 </script>
 
 <template>

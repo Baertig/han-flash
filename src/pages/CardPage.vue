@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, defineProps } from "vue";
+import { ref, computed, onMounted, defineProps, nextTick } from "vue";
 import { useQuasar } from "quasar";
 import { useRouter } from "vue-router";
 
@@ -10,6 +10,7 @@ import {
   generateImage as generateImageClient,
   generateImageIdeas,
 } from "../service/openai-client";
+import { onKeyStroke } from "@vueuse/core";
 
 const $q = useQuasar();
 const flashcardsStore = useFlashcardsStore();
@@ -22,6 +23,8 @@ const loadingAutoFill = ref(false);
 const loadingAudio = ref(false);
 const loadingIdeas = ref(false);
 const loadingImageGeneration = ref({}); //idx : loading
+
+const tableButton0 = ref(null)
 
 const form = ref({
   word: "",
@@ -103,6 +106,9 @@ async function autofillWithAI() {
         })
       ),
     };
+
+    nextTick(() => tableButton0.value.$el.focus())
+    generateAudio()
   } catch (error) {
     console.error("Error fetching from OpenAI:", error);
 
@@ -231,6 +237,22 @@ function onSubmit() {
 function onCancel() {
   router.push({ name: "Flashcards" });
 }
+
+onKeyStroke("Escape", (e) => {
+  e.preventDefault()
+  onCancel();
+})
+
+onKeyStroke("s", (e) => {
+  if (!e.ctrlKey) {
+    return;
+  }
+  e.preventDefault()
+
+  onSubmit()
+})
+
+
 </script>
 
 <template>
@@ -243,7 +265,6 @@ function onCancel() {
       </q-card-section>
 
       <q-card-section class="q-pt-none">
-        <q-form @submit.prevent="onSubmit">
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <q-input
@@ -287,7 +308,6 @@ function onCancel() {
                 label="Translation *"
                 outlined
                 class="q-mb-md"
-                :rules="[(val) => !!val || 'Translation is required']"
               />
             </div>
           </div>
@@ -350,6 +370,7 @@ function onCancel() {
             <template v-slot:body-cell-actions="props">
               <q-td :props="props" class="q-gutter-xs">
                 <q-btn
+                  :ref="`tableButton${props.rowIndex}`"
                   round
                   dense
                   flat
@@ -368,7 +389,6 @@ function onCancel() {
           <div v-if="form.audioUrl" class="q-mt-md">
             <audio controls :src="form.audioUrl" />
           </div>
-        </q-form>
       </q-card-section>
 
       <q-card-section>

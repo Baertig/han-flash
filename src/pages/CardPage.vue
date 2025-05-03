@@ -1,11 +1,9 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, defineProps } from "vue";
 import { useQuasar } from "quasar";
 import { useRouter } from "vue-router";
 
 import { useFlashcardsStore } from "../stores/flashcards";
-import translationSchema from "../service/gpt-translation-schema.json";
-import imageIdeasSchema from "../service/gpt-image-ideas-schema.json";
 import {
   generateChineseAudio,
   generateEnglishToChineseCardTextConent,
@@ -16,6 +14,9 @@ import {
 const $q = useQuasar();
 const flashcardsStore = useFlashcardsStore();
 const router = useRouter();
+
+const props = defineProps({ id: { type: [String, Number], default: null } });
+const editMode = computed(() => props.id != null);
 
 const loadingAutoFill = ref(false);
 const loadingAudio = ref(false);
@@ -141,6 +142,7 @@ async function generateImage(prompt, index) {
     ...loadingImageGeneration.value,
     [index]: true,
   };
+
   try {
     const url = await generateImageClient(prompt);
     imageResults.value[index] = url;
@@ -179,9 +181,49 @@ async function generateIdeasWithAI() {
   }
 }
 
+onMounted(() => {
+  if (!editMode.value) {
+    return;
+  }
+
+  const idNum = typeof props.id === "string" ? parseInt(props.id) : props.id;
+  const card = flashcardsStore.getFlashcardById(idNum);
+
+  if (!card) {
+    $q.notify({
+      color: "warning",
+      message: `No card with id "${id}" found`,
+      icon: "error",
+    });
+
+    router.push({ name: "NewCard" });
+    return;
+  }
+
+  form.value = {
+    word: card.word,
+    pinyin: card.pinyin,
+    translation: card.translation,
+    exampleSentence: card.exampleSentence,
+    sentencePinyin: card.sentencePinyin,
+    sentenceTranslation: card.sentenceTranslation,
+    sentenceBreakdown: card.sentenceBreakdown.map((item) => ({ ...item })),
+    audioUrl: card.audioUrl,
+    imageUrl: card.imageUrl,
+  };
+
+  imageResults.value = card.imageUrl ? [card.imageUrl] : [];
+});
+
 function onSubmit() {
   if (form.value.word && form.value.translation) {
-    flashcardsStore.addFlashcard({ ...form.value });
+    if (editMode.value) {
+      const idNum =
+        typeof props.id === "string" ? parseInt(props.id) : props.id;
+      flashcardsStore.updateFlashcard(idNum, { ...form.value });
+    } else {
+      flashcardsStore.addFlashcard({ ...form.value });
+    }
     router.push({ name: "Flashcards" });
   }
 }
@@ -195,7 +237,9 @@ function onCancel() {
   <div class="q-pa-md">
     <q-card>
       <q-card-section class="row items-center">
-        <div class="text-h6">New Flashcard</div>
+        <div class="text-h6">
+          {{ editMode ? "Edit Flashcard" : "New Flashcard" }}
+        </div>
       </q-card-section>
 
       <q-card-section class="q-pt-none">
@@ -375,7 +419,7 @@ function onCancel() {
             >
               <div class="row justify-between" style="gap: 16px">
                 <q-img
-                  class="col"
+                  class="col-auto"
                   height="400px"
                   width="400px"
                   :src="item.url"
@@ -402,7 +446,7 @@ function onCancel() {
                 :class="[
                   'rounded-borders',
                   {
-                    'highlighted': idx === carouselModel,
+                    highlighted: idx === carouselModel,
                   },
                 ]"
               >

@@ -41,7 +41,7 @@ const props = defineProps({
 });
 
 // Emits for actions
-const emit = defineEmits(["enhance", "delete"]);
+const emit = defineEmits(["edit", "delete"]);
 
 // reference to hidden audio element
 const audioRef = ref(null);
@@ -122,12 +122,15 @@ function playAudio() {
 
     <q-card-actions>
       <q-btn
+        v-if="!!props.audioUrl"
         flat
         color="primary"
-        label="Enhance"
-        icon="auto_awesome"
-        @click="emit('enhance')"
+        icon="volume_up"
+        @click="playAudio"
       />
+
+      <q-space />
+
       <q-btn
         flat
         color="negative"
@@ -136,14 +139,12 @@ function playAudio() {
         @click="emit('delete')"
       />
 
-      <q-space />
-
       <q-btn
-        v-if="!!props.audioUrl"
         flat
         color="primary"
-        icon="volume_up"
-        @click="playAudio"
+        label="Edit"
+        icon="edit"
+        @click="emit('edit')"
       />
     </q-card-actions>
   </q-card>

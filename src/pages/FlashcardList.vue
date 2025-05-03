@@ -3,7 +3,7 @@ import { useQuasar } from "quasar";
 import { storeToRefs } from "pinia";
 import Flashcard from "../components/Flashcard.vue";
 import { useFlashcardsStore } from "../stores/flashcards";
-import { useRouter } from 'vue-router';
+import { useRouter } from "vue-router";
 
 const $q = useQuasar();
 const flashcardsStore = useFlashcardsStore();
@@ -15,35 +15,39 @@ const { flashcards, isMediaAvailable } = storeToRefs(flashcardsStore);
 // Simplified download logic: delegate to store action
 const downloadAnkiFile = () => {
   const success = flashcardsStore.downloadAnkiFile();
+
   if (!success) {
-    $q.notify({ message: 'No flashcards available to export.', color: 'warning', icon: 'warning', position: 'top' });
+    $q.notify({
+      message: "Flashcard export failed",
+      color: "negative",
+      icon: "error",
+      position: "top",
+    });
   }
 };
 
 // New handler to download all media (audio or image)
 const downloadMedia = async () => {
-  if (!isMediaAvailable.value) {
-    $q.notify({ message: 'No media available to download.', color: 'warning', icon: 'warning', position: 'top' });
-    return;
-  }
-
   const success = await flashcardsStore.downloadMedia();
 
   if (!success) {
-    $q.notify({ message: 'Failed to download media.', color: 'negative', icon: 'error', position: 'top' });
+    $q.notify({
+      message: "Failed to download media.",
+      color: "negative",
+      icon: "error",
+      position: "top",
+    });
   }
 };
 
 // Navigate to new card page
 function goToNewCard() {
-  router.push({ name: 'NewCard' });
+  router.push({ name: "NewCard" });
 }
 
 // Handle flashcard actions
-function enhanceFlashcard(id) {
-  console.log("Enhance flashcard", id);
-  // To be implemented: API calls for example sentences, TTS, etc.
-  // The actual implementation will use the store's enhanceFlashcard method
+function editFlashcard(id) {
+  router.push({ name: "EditCard", params: { id } });
 }
 
 function deleteFlashcard(id) {
@@ -53,12 +57,6 @@ function deleteFlashcard(id) {
 
 <template>
   <div class="q-pa-md">
-    <h1 class="text-h4 q-mb-md">Anki Card Creator</h1>
-    <p class="q-mb-lg">
-      Create content-rich flashcards for learning Chinese vocabulary
-    </p>
-
-    <!-- Add the download button here -->
     <div class="q-mb-md">
       <q-btn
         color="secondary"
@@ -98,7 +96,7 @@ function deleteFlashcard(id) {
           :sentence-breakdown="card.sentenceBreakdown"
           :audio-url="card.audioUrl"
           :image-url="card.imageUrl"
-          @enhance="enhanceFlashcard(card.id)"
+          @edit="editFlashcard(card.id)"
           @delete="deleteFlashcard(card.id)"
         />
       </div>

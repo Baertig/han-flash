@@ -1,12 +1,13 @@
 import { createRouter, createWebHistory } from "vue-router";
 import FlashcardList from "../pages/FlashcardList.vue";
-import NewCardPage from "../pages/NewCardPage.vue";
+import CardPage from "../pages/CardPage.vue";
 import NotFound from "../pages/NotFound.vue";
 
 const routes = [
   { path: "/", redirect: "/flashcards" },
   { path: "/flashcards", name: "Flashcards", component: FlashcardList },
-  { path: "/new-card", name: "NewCard", component: NewCardPage },
+  { path: "/new-card", name: "NewCard", component: CardPage },
+  { path: "/card/:id", name: "EditCard", component: CardPage, props: true },
   { path: "/:pathMatch(.*)*", name: "NotFound", component: NotFound },
 ];
 

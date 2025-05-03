@@ -75,7 +75,7 @@ function playAudio() {
       <q-separator class="q-mb-sm" />
 
       <div class="row justify-between">
-        <div class="col">
+        <div class="col" style="min-height: 100px;">
           <div class="text-body1">{{ exampleSentence }}</div>
           <div class="text-caption text-primary q-mb-sm">
             {{ sentencePinyin }}

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineProps, defineEmits } from "vue";
+import { ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
 
 import { useSettingsStore } from "../stores/settings";
@@ -10,11 +10,17 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
   useDialogPluginComponent();
 
 const emit = defineEmits([...useDialogPluginComponent.emits]);
+
 const settingsStore = useSettingsStore();
-const apiKey = ref(settingsStore.openaiApiKey);
+
+// I only need the initial value here ... purposefully not calling "storeToRefs"
+const { openaiApiKey } = settingsStore;
+const apiKey = ref(openaiApiKey);
 
 function save() {
-  settingsStore.setApiKey(apiKey.value);
+  if (apiKey.value !== "") {
+    settingsStore.setApiKey(apiKey.value);
+  }
   onDialogOK();
 }
 

@@ -10,14 +10,17 @@ export const openAiClient = axios.create({
 
 // Automatically inject OpenAI API key into headers
 openAiClient.interceptors.request.use((config) => {
-  const settingsStore = useSettingsStore();
-  const key = settingsStore.openaiApiKey;
-  if (!key) {
+  //destructuring will give me the value immeditaly
+  const { openaiApiKey } = useSettingsStore();
+  console.log("openApiKey", openaiApiKey);
+
+  if (!openaiApiKey) {
     throw new Error("OpenAI API key is missing");
   }
+
   config.headers = {
     ...config.headers,
-    Authorization: `Bearer ${key}`,
+    Authorization: `Bearer ${openaiApiKey}`,
   };
   return config;
 });

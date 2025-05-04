@@ -3,8 +3,9 @@ import { Dialog } from 'quasar';
 
 import { useSettingsStore } from './stores/settings';
 import SettingsDialog from './dialogs/SettingsDialog.vue';
+import { storeToRefs } from 'pinia';
 
-const { hasApiKey } = useSettingsStore();
+const { hasApiKey } = storeToRefs(useSettingsStore());
 
 function openSettingsDialog() {
   Dialog.create({

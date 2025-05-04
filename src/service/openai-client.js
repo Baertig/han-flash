@@ -1,10 +1,25 @@
 import axios from "axios";
+
+import { useSettingsStore } from "../stores/settings";
 import translationSchema from "./gpt-translation-schema.json";
 import imageIdeasSchema from "./gpt-image-ideas-schema.json";
 
 export const openAiClient = axios.create({
   baseURL: "https://api.openai.com/v1/",
-  headers: { Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}` },
+});
+
+// Automatically inject OpenAI API key into headers
+openAiClient.interceptors.request.use((config) => {
+  const settingsStore = useSettingsStore();
+  const key = settingsStore.openaiApiKey;
+  if (!key) {
+    throw new Error("OpenAI API key is missing");
+  }
+  config.headers = {
+    ...config.headers,
+    Authorization: `Bearer ${key}`,
+  };
+  return config;
 });
 
 const TEXT_MODEL = "gpt-4o";

@@ -12,8 +12,12 @@ Anki Card Creator is designed to streamline the creation of comprehensive flashc
 - **AI-powered Autofill**: Automatically fetch pinyin, translation, example sentence (with pinyin and translation), and a detailed sentence breakdown using OpenAI GPT.
 - **Sentence Breakdown**: View a word-by-word breakdown of example sentences, including pinyin and meaning.
 - **Image Generation & Selection**: Generate images for each card prompt, display as selectable thumbnails, highlight selected image with primary border.
-- **Media Download**: Download audio and selected image files as a ZIP pack; filenames are derived from card pinyin for easy Anki import.
-- **Anki Export (Updated)**: Front side now includes an `<img>` tag above the translation when an image is attached, and the back side embeds the example sentence audio using `[sound:filename]`. Both image and audio filenames are auto-generated from the card’s pinyin to match the exported Anki media files.
+- **Media Download**: Download audio and image files as a ZIP pack; filenames are derived from card pinyin for easy Anki import.
+- **Anki Export**: Export all current flashcards to a `.txt` file suitable for importing into Anki.
+
+  - _Front_: Translation and Image
+  - _Back_: Word, Pinyin, Example Sentence (with Pinyin & Translation), Sentence Breakdown, Sound file of the example sentence.
+
 - **Text-to-Speech**: Generate audio for example sentences using OpenAI TTS and play it directly within the flashcard.
 
 ## Planned Features

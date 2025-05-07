@@ -3,6 +3,11 @@ import { saveAs } from "file-saver";
 import JSZip from "jszip";
 import axios from "axios";
 
+export const TYPE = Object.freeze({
+  ACTIVE: "ACTIVE", //L1 to L2
+  PASSIVE: "PASSIVE", //L2 to L1
+});
+
 function normalizePinyin(pinyin) {
   // 1. Normalize to NFD form to decompose characters and diacritics
   // 2. Remove everything except letters, numbers, and whitespace
@@ -12,6 +17,7 @@ function normalizePinyin(pinyin) {
     .replace(/[^A-Za-z0-9\s]/g, "")
     .replace(/\s+/g, "_");
 }
+
 function generateAudioFilename(card) {
   const base = normalizePinyin(card.sentencePinyin) || `audio_${card.id}`;
 
@@ -48,6 +54,7 @@ export const useFlashcardsStore = defineStore("flashcards", {
         ],
         audioUrl: "/han-flash/ni_hao_wo_shi_xiao_ming.mp3",
         imageUrl: "/han-flash/ni_hao.jpg",
+        type: TYPE.ACTIVE,
       },
       {
         id: 2,
@@ -69,6 +76,7 @@ export const useFlashcardsStore = defineStore("flashcards", {
         ],
         audioUrl: "/han-flash/xie_xie_ni_de_bang_zhu.mp3",
         imageUrl: "/han-flash/xie_xie.jpg",
+        type: TYPE.PASSIVE,
       },
     ],
     nextId: 3,
@@ -102,11 +110,12 @@ export const useFlashcardsStore = defineStore("flashcards", {
               word: item.word || "",
               pinyin: item.pinyin || "",
               meaning: item.meaning || "",
-              visible: item.visible !== false,
+              visible: !!item.visible, //undefined will result in invisible
             }))
           : [],
         audioUrl: cardData.audioUrl || "",
         imageUrl: cardData.imageUrl || "",
+        type: cardData.type || TYPE.PASSIVE,
       };
 
       this.flashcards.push(newCard);
@@ -142,36 +151,56 @@ export const useFlashcardsStore = defineStore("flashcards", {
         const imageTag = card.imageUrl
           ? `<img src="${generateImageFilename(card)}"><br>`
           : "";
-        const front = `${imageTag}${card.translation || ""}`;
 
-        const breakdownString = card.sentenceBreakdown
-          // include only visible items
-          .filter((item) => item.visible !== false)
-          .map(
-            (item) =>
-              `${item.word || ""} (${item.pinyin || ""}) - ${
-                item.meaning || ""
-              }`
-          )
-          .join("<br>");
-
-        // Create audio tag if audio exists
         const audioTag = card.audioUrl
           ? `[sound:${generateAudioFilename(card)}]`
           : "";
 
-        const back = [
-          card.word || "",
-          card.pinyin || "",
-          "-----",
-          `${card.exampleSentence || ""} ${audioTag}`.trim(),
-          card.sentencePinyin || "",
-          card.sentenceTranslation || "",
-          "", // Empty line
-          breakdownString || "",
-        ].join("<br>");
+        const breakdownString = card.sentenceBreakdown
+          // include only visible items
+          .filter((item) => item.visible !== false)
+          .map((item) => `${item.word} (${item.pinyin}) - ${item.meaning}`)
+          .join("<br>");
 
-        return `${front};${back}`;
+        // Create audio tag if audio exists
+
+        if (card.type === TYPE.ACTIVE) {
+          const front = `${imageTag}${card.translation || ""}`;
+
+          const back = [
+            card.word,
+            card.pinyin,
+            "-----",
+            `${card.exampleSentence} ${audioTag}`,
+            card.sentencePinyin,
+            card.sentenceTranslation,
+            "", // Empty line
+            breakdownString,
+          ].join("<br>");
+
+          return `${front};${back}`;
+        } else if (card.type === TYPE.PASSIVE) {
+          const sentence = card.exampleSentence.replace(
+            card.word,
+            `<span style="font-size: 30px">${card.word}</span>`
+          );
+          const front = `${imageTag}${sentence}`;
+
+          const back = [
+            `${card.sentencePinyin.replace(
+              card.pinyin,
+              `<strong>${card.pinyin}</strong>`
+            )} ${audioTag}`,
+            card.sentenceTranslation,
+            "", // Empty line
+            `${card.word} (${card.pinyin})- ${card.translation}`,
+            breakdownString,
+          ].join("<br>");
+
+          return `${front};${back}`;
+        } else {
+          console.error(`type of card ${card.id}: ${card.type} not supported`);
+        }
       });
 
       return lines.join("\n");

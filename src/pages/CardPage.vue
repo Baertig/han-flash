@@ -3,7 +3,7 @@ import { ref, computed, onMounted, defineProps, nextTick } from "vue";
 import { useQuasar } from "quasar";
 import { useRouter } from "vue-router";
 
-import { useFlashcardsStore } from "../stores/flashcards";
+import { useFlashcardsStore, TYPE } from "../stores/flashcards";
 import {
   generateChineseAudio,
   generateEnglishToChineseCardTextConent,
@@ -24,7 +24,7 @@ const loadingAudio = ref(false);
 const loadingIdeas = ref(false);
 const loadingImageGeneration = ref({}); //idx : loading
 
-const tableButton0 = ref(null)
+const tableButton0 = ref(null);
 
 const form = ref({
   word: "",
@@ -36,6 +36,7 @@ const form = ref({
   sentenceBreakdown: [],
   audioUrl: "",
   imageUrl: "",
+  type: TYPE.PASSIVE,
 });
 
 const imagePrompts = ref([""]);
@@ -102,13 +103,13 @@ async function autofillWithAI() {
           word: component.word,
           pinyin: component.pinyin,
           meaning: component.translation,
-          visible: true,
+          visible: false,
         })
       ),
     };
 
-    nextTick(() => tableButton0.value.$el.focus())
-    generateAudio()
+    nextTick(() => tableButton0.value.$el.focus());
+    generateAudio();
   } catch (error) {
     console.error("Error fetching from OpenAI:", error);
 
@@ -239,20 +240,18 @@ function onCancel() {
 }
 
 onKeyStroke("Escape", (e) => {
-  e.preventDefault()
+  e.preventDefault();
   onCancel();
-})
+});
 
 onKeyStroke("s", (e) => {
   if (!e.ctrlKey) {
     return;
   }
-  e.preventDefault()
+  e.preventDefault();
 
-  onSubmit()
-})
-
-
+  onSubmit();
+});
 </script>
 
 <template>
@@ -262,133 +261,143 @@ onKeyStroke("s", (e) => {
         <div class="text-h6">
           {{ editMode ? "Edit Flashcard" : "New Flashcard" }}
         </div>
+        <q-checkbox
+          v-model="form.type"
+          checked-icon="translate"
+          unchecked-icon="auto_stories"
+          :true-value="TYPE.ACTIVE"
+          :false-value="TYPE.PASSIVE"
+          keep-color
+          color="secondary"
+          :label="form.type === TYPE.ACTIVE ? 'active' : 'passive'"
+        />
       </q-card-section>
 
       <q-card-section class="q-pt-none">
-          <div class="row q-col-gutter-md">
-            <div class="col-12 col-md-6">
-              <q-input
-                v-model="form.word"
-                label="Chinese Word/Character *"
-                outlined
-                class="q-mb-md"
-                :rules="[(val) => !!val || 'Word is required']"
-                @keyup.enter.native="autofillWithAI"
-                autofocus
-              >
-                <template v-slot:append>
-                  <q-btn
-                    round
-                    dense
-                    flat
-                    icon="auto_awesome"
-                    color="primary"
-                    :disable="!canAutofill"
-                    :loading="loadingAutoFill"
-                    @click="autofillWithAI"
-                    title="Autofill with AI"
-                  />
-                </template>
-              </q-input>
-            </div>
-
-            <div class="col-12 col-md-6">
-              <q-input
-                v-model="form.pinyin"
-                label="Pinyin"
-                outlined
-                class="q-mb-md"
-                placeholder="e.g. nǐ hǎo"
-              />
-            </div>
-
-            <div class="col-12">
-              <q-input
-                v-model="form.translation"
-                label="Translation *"
-                outlined
-                class="q-mb-md"
-              />
-            </div>
-          </div>
-
-          <div class="row q-col-gutter-md">
-            <div class="col-12 col-md-6">
-              <q-input
-                v-model="form.exampleSentence"
-                label="Example Sentence"
-                outlined
-                class="q-mb-md"
-              >
-                <template v-slot:append>
-                  <q-btn
-                    round
-                    dense
-                    flat
-                    icon="volume_up"
-                    color="primary"
-                    :disable="!canGenerateAudio"
-                    :loading="loadingAudio"
-                    @click="generateAudio"
-                    title="Text-to-Speech"
-                  />
-                </template>
-              </q-input>
-            </div>
-            <div class="col-12 col-md-6">
-              <q-input
-                v-model="form.sentencePinyin"
-                label="Sentence Pinyin"
-                outlined
-                class="q-mb-md"
-              />
-            </div>
-            <div class="col-12">
-              <q-input
-                v-model="form.sentenceTranslation"
-                label="Sentence Translation"
-                outlined
-                class="q-mb-md"
-              />
-            </div>
-          </div>
-
-          <div class="text-subtitle2 q-mb-sm">Sentence Breakdown</div>
-
-          <q-table
-            :rows="form.sentenceBreakdown"
-            :columns="breakdownColumns"
-            row-key="word"
-            flat
-            bordered
-            dense
-            :rows-per-page-options="[0]"
-            hide-bottom
-            v-if="form.sentenceBreakdown.length > 0"
-            :table-row-class-fn="rowClass"
-          >
-            <template v-slot:body-cell-actions="props">
-              <q-td :props="props" class="q-gutter-xs">
+        <div class="row q-col-gutter-md">
+          <div class="col-12 col-md-6">
+            <q-input
+              v-model="form.word"
+              label="Chinese Word/Character *"
+              outlined
+              class="q-mb-md"
+              :rules="[(val) => !!val || 'Word is required']"
+              @keyup.enter.native="autofillWithAI"
+              autofocus
+            >
+              <template v-slot:append>
                 <q-btn
-                  :ref="`tableButton${props.rowIndex}`"
                   round
                   dense
                   flat
-                  :icon="props.row.visible ? 'visibility' : 'visibility_off'"
+                  icon="auto_awesome"
                   color="primary"
-                  @click="toggleBreakdownVisibility(props.rowIndex)"
+                  :disable="!canAutofill"
+                  :loading="loadingAutoFill"
+                  @click="autofillWithAI"
+                  title="Autofill with AI"
                 />
-              </q-td>
-            </template>
-          </q-table>
-          <div v-else class="text-grey q-mt-sm">
-            No breakdown available. Use Autofill or add an example sentence
-            manually.
+              </template>
+            </q-input>
           </div>
 
-          <div v-if="form.audioUrl" class="q-mt-md">
-            <audio controls :src="form.audioUrl" />
+          <div class="col-12 col-md-6">
+            <q-input
+              v-model="form.pinyin"
+              label="Pinyin"
+              outlined
+              class="q-mb-md"
+              placeholder="e.g. nǐ hǎo"
+            />
           </div>
+
+          <div class="col-12">
+            <q-input
+              v-model="form.translation"
+              label="Translation *"
+              outlined
+              class="q-mb-md"
+            />
+          </div>
+        </div>
+
+        <div class="row q-col-gutter-md">
+          <div class="col-12 col-md-6">
+            <q-input
+              v-model="form.exampleSentence"
+              label="Example Sentence"
+              outlined
+              class="q-mb-md"
+            >
+              <template v-slot:append>
+                <q-btn
+                  round
+                  dense
+                  flat
+                  icon="volume_up"
+                  color="primary"
+                  :disable="!canGenerateAudio"
+                  :loading="loadingAudio"
+                  @click="generateAudio"
+                  title="Text-to-Speech"
+                />
+              </template>
+            </q-input>
+          </div>
+          <div class="col-12 col-md-6">
+            <q-input
+              v-model="form.sentencePinyin"
+              label="Sentence Pinyin"
+              outlined
+              class="q-mb-md"
+            />
+          </div>
+          <div class="col-12">
+            <q-input
+              v-model="form.sentenceTranslation"
+              label="Sentence Translation"
+              outlined
+              class="q-mb-md"
+            />
+          </div>
+        </div>
+
+        <div class="text-subtitle2 q-mb-sm">Sentence Breakdown</div>
+
+        <q-table
+          :rows="form.sentenceBreakdown"
+          :columns="breakdownColumns"
+          row-key="word"
+          flat
+          bordered
+          dense
+          :rows-per-page-options="[0]"
+          hide-bottom
+          v-if="form.sentenceBreakdown.length > 0"
+          :table-row-class-fn="rowClass"
+        >
+          <template v-slot:body-cell-actions="props">
+            <q-td :props="props" class="q-gutter-xs">
+              <q-btn
+                :ref="`tableButton${props.rowIndex}`"
+                round
+                dense
+                flat
+                :icon="props.row.visible ? 'visibility' : 'visibility_off'"
+                color="primary"
+                @click="toggleBreakdownVisibility(props.rowIndex)"
+              />
+            </q-td>
+          </template>
+        </q-table>
+        <div v-else class="text-grey q-mt-sm">
+          No breakdown available. Use Autofill or add an example sentence
+          manually.
+        </div>
+
+        <div v-if="form.audioUrl" class="q-mt-md">
+          <audio controls :src="form.audioUrl" />
+        </div>
       </q-card-section>
 
       <q-card-section>

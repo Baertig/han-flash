@@ -1,6 +1,8 @@
 <script setup>
 import { defineProps, ref, watch } from "vue";
 
+import { TYPE } from "../stores/flashcards";
+
 const props = defineProps({
   word: {
     type: String,
@@ -38,10 +40,14 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  type: {
+    type: String,
+    required: true
+  }
 });
 
 // Emits for actions
-const emit = defineEmits(["edit", "delete"]);
+const emit = defineEmits(["edit", "delete", "update:type"]);
 
 // reference to hidden audio element
 const audioRef = ref(null);
@@ -67,6 +73,21 @@ function playAudio() {
       <div class="row items-baseline">
         <div class="text-h5 q-mr-md">{{ word }}</div>
         <div class="text-subtitle1 text-primary">{{ pinyin }}</div>
+
+        <q-space />
+
+        <q-checkbox 
+          :model-value="props.type"
+          @update:model-value="(val) => emit('update:type', val)"
+          checked-icon="translate"
+          unchecked-icon="auto_stories"
+          :true-value="TYPE.ACTIVE"
+          :false-value="TYPE.PASSIVE"
+          keep-color
+          color="secondary"
+          :label="props.type === TYPE.ACTIVE ? 'active' : 'passive'"
+          dense
+        />
       </div>
       <div class="text-subtitle1">{{ translation }}</div>
     </q-card-section>

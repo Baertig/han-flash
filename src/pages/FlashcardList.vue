@@ -106,6 +106,8 @@ onKeyStroke('n', (e) => {
           :sentence-breakdown="card.sentenceBreakdown"
           :audio-url="card.audioUrl"
           :image-url="card.imageUrl"
+          :type="card.type"
+          @update:type="(newType) => card.type = newType"
           @edit="editFlashcard(card.id)"
           @delete="deleteFlashcard(card.id)"
         />

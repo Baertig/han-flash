@@ -12,7 +12,6 @@ export const openAiClient = axios.create({
 openAiClient.interceptors.request.use((config) => {
   //destructuring will give me the value immeditaly
   const { openaiApiKey } = useSettingsStore();
-  console.log("openApiKey", openaiApiKey);
 
   if (!openaiApiKey) {
     throw new Error("OpenAI API key is missing");

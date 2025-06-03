@@ -165,7 +165,10 @@ export const useFlashcardsStore = defineStore("flashcards", {
         // Create audio tag if audio exists
 
         if (card.type === TYPE.ACTIVE) {
-          const front = `${imageTag}${card.translation || ""}`;
+          const front = `${imageTag}${card.translation || ""}`.replace(
+            ";",
+            ","
+          );
 
           const back = [
             card.word,
@@ -176,7 +179,9 @@ export const useFlashcardsStore = defineStore("flashcards", {
             card.sentenceTranslation,
             "", // Empty line
             breakdownString,
-          ].join("<br>");
+          ]
+            .join("<br>")
+            .replaceAll(";", ",");
 
           return `${front};${back}`;
         } else if (card.type === TYPE.PASSIVE) {
@@ -184,7 +189,8 @@ export const useFlashcardsStore = defineStore("flashcards", {
             card.word,
             `<span style="font-size: 30px">${card.word}</span>`
           );
-          const front = `${imageTag}${sentence}`;
+
+          const front = `${imageTag}${sentence}`.replaceAll(";", ",");
 
           const back = [
             `${card.sentencePinyin.replace(
@@ -195,7 +201,9 @@ export const useFlashcardsStore = defineStore("flashcards", {
             "", // Empty line
             `${card.word} (${card.pinyin})- ${card.translation}`,
             breakdownString,
-          ].join("<br>");
+          ]
+            .join("<br>")
+            .replaceAll(";", ",");
 
           return `${front};${back}`;
         } else {

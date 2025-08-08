@@ -1,0 +1,23 @@
+{
+    "name": "learning_chat_summary",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "summary_zh": {
+                "type": "string",
+                "description": "A short summary of the conversation in Chinese suitable for the user's level."
+            },
+            "summary_en": {
+                "type": "string",
+                "description": "An optional English summary. Keep it concise.",
+                "nullable": true
+            }
+        },
+        "required": [
+            "summary_zh",
+            "summary_en"
+        ],
+        "additionalProperties": false
+    },
+    "strict": true
+}

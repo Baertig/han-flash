@@ -3,6 +3,9 @@ import axios from "axios";
 import { useSettingsStore } from "../stores/settings";
 import translationSchema from "./gpt-translation-schema.json";
 import imageIdeasSchema from "./gpt-image-ideas-schema.json";
+import chatReplySchema from "./gpt-chat-reply-schema.json";
+import gradingSchema from "./gpt-grading-schema.json";
+import summarySchema from "./gpt-conversation-summary-schema.json";
 
 export const openAiClient = axios.create({
   baseURL: "https://api.openai.com/v1/",
@@ -122,4 +125,87 @@ export async function generateImageIdeas(word) {
   });
   const result = JSON.parse(data.choices[0].message.content);
   return result.ideas;
+}
+
+export async function generateLearningChatAssistantReply({
+  systemPrompt,
+  history,
+  userLevel,
+}) {
+  const messages = [
+    {
+      role: "system",
+      content:
+        systemPrompt ||
+        "You are a helpful Chinese conversation partner. Always reply in Chinese appropriate to the user's CEFR level. Try to teach the user something about the topic he chose. Split your reply into tokens using the provided JSON schema so the UI can show per-word pinyin and translation.",
+    },
+    ...history,
+  ];
+
+  const { data } = await openAiClient.post("/chat/completions", {
+    model: TEXT_MODEL,
+    messages,
+    response_format: {
+      type: "json_schema",
+      json_schema: chatReplySchema,
+    },
+  });
+
+  if (data.choices && data.choices[0]?.message?.content) {
+    return JSON.parse(data.choices[0].message.content);
+  }
+
+  console.error("Data missing from openai response", data);
+  return { tokens: [] };
+}
+
+export async function gradeUserMessage({ message, userLevel, topic }) {
+  const { data } = await openAiClient.post("/chat/completions", {
+    model: TEXT_MODEL,
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are a strict but supportive Chinese teacher. Evaluate a single student sentence and return scores 1-5 for naturalness, grammar, and complexity (relative to the student's level). Provide helpful explanations and an improved sentence.",
+      },
+      {
+        role: "user",
+        content: `Student CEFR level: ${userLevel}. Topic: ${topic}.\nSentence: ${message}`,
+      },
+    ],
+    response_format: {
+      type: "json_schema",
+      json_schema: gradingSchema,
+    },
+  });
+
+  if (data.choices && data.choices[0]?.message?.content) {
+    return JSON.parse(data.choices[0].message.content);
+  }
+
+  console.error("Data missing from openai response", data);
+  return null;
+}
+
+export async function generateConversationSummary({ history, userLevel }) {
+  const { data } = await openAiClient.post("/chat/completions", {
+    model: TEXT_MODEL,
+    messages: [
+      {
+        role: "system",
+        content:
+          "Summarize the conversation for a Chinese learner at the given level. Keep it short and readable.",
+      },
+      ...history.map((m) => ({ role: m.role, content: m.text })),
+    ],
+    response_format: {
+      type: "json_schema",
+      json_schema: summarySchema,
+    },
+  });
+
+  if (data.choices && data.choices[0]?.message?.content) {
+    return JSON.parse(data.choices[0].message.content);
+  }
+  return null;
 }

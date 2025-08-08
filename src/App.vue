@@ -1,11 +1,13 @@
 <script setup>
 import { Dialog } from 'quasar';
+import { useRouter } from 'vue-router';
 
 import { useSettingsStore } from './stores/settings';
 import SettingsDialog from './dialogs/SettingsDialog.vue';
 import { storeToRefs } from 'pinia';
 
 const { hasApiKey } = storeToRefs(useSettingsStore());
+const router = useRouter();
 
 function openSettingsDialog() {
   Dialog.create({
@@ -20,6 +22,7 @@ function openSettingsDialog() {
       <q-toolbar>
         <q-toolbar-title>HanFlash</q-toolbar-title>
         <q-space />
+        <q-btn flat dense label="Chat" icon="chat" @click="router.push({ name: 'LearningChat' })" />
         <q-btn flat dense round icon="settings" @click="openSettingsDialog" />
       </q-toolbar>
     </q-header>

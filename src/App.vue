@@ -17,7 +17,7 @@ function openSettingsDialog() {
 </script>
 
 <template>
-  <q-layout view="hHh lpR fFf">
+  <q-layout view="hHh lpR fFf" style="height: 100vh">
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-toolbar-title>HanFlash</q-toolbar-title>
@@ -27,7 +27,7 @@ function openSettingsDialog() {
       </q-toolbar>
     </q-header>
 
-    <q-page-container>
+    <q-page-container class="full-height">
       <q-banner v-if="!hasApiKey" class="bg-negative text-white" dense> OpenAI API key is missing. Please set it in settings.
       </q-banner>
       <RouterView />

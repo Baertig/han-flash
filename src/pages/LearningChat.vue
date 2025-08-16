@@ -1,11 +1,11 @@
 <script setup>
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import LearningChat from '../components/LearningChat.vue';
+import LLMChat from '../components/LLMChat.vue';
 import { useLearningChatStore } from '../stores/learningChat';
 
 const store = useLearningChatStore();
-const { messages, selectedMessage, avgScores } = storeToRefs(store);
+const { interestingWords, selectedMessage, avgScores } = storeToRefs(store);
 
 const selectedGrading = computed(() => selectedMessage.value?.meta?.grading || null);
 </script>
@@ -13,12 +13,33 @@ const selectedGrading = computed(() => selectedMessage.value?.meta?.grading || n
 <template>
   <div class="holy-grail">
     <aside class="left">
-      <!-- Placeholder left sidebar -->
-      <div class="placeholder">Left sidebar (coming soon)</div>
+        <q-expansion-item
+          icon="star"
+          label="Interesting words"
+          v-if="interestingWords.length"
+        >
+          <q-list bordered separator>
+            <q-item v-for="(w, idx) in interestingWords" :key="idx">
+              <q-item-section>
+                <q-item-label>{{ w.word }} · {{ w.pinyin }}</q-item-label>
+                <q-item-label caption>{{ w.translation }}</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-btn
+                  flat
+                  size="sm"
+                  color="negative"
+                  icon="delete"
+                  @click="store.interestingWords.splice(idx, 1)"
+                />
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-expansion-item>
     </aside>
 
     <main class="center">
-      <LearningChat />
+      <LLMChat />
     </main>
 
     <aside class="right">
@@ -59,10 +80,11 @@ const selectedGrading = computed(() => selectedMessage.value?.meta?.grading || n
 <style scoped>
 .holy-grail {
   display: grid;
-  grid-template-columns: 240px minmax(400px, 1fr) 320px;
+  grid-template-columns: 400px minmax(400px, 1fr) 620px;
   grid-template-areas: 'left center right';
   gap: 16px;
   padding: 16px;
+  height: 100%;
 }
 .left { grid-area: left; }
 .center { grid-area: center; }

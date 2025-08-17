@@ -23,8 +23,9 @@ export const useLearningChatStore = defineStore("learningChat", {
     summaryData: null,
 
     selectedMessageId: null,
-    currentScene: null, // scene object
+    currentScene: null,
     verificationResult: null,
+    sceneCompleted: false,
   }),
   getters: {
     isBusy: (s) => s.assistantLoading || s.summaryLoading,
@@ -92,6 +93,7 @@ export const useLearningChatStore = defineStore("learningChat", {
       this.selectedMessageId = null;
       this.currentScene = null;
       this.verificationResult = null;
+      this.sceneCompleted = false;
     },
 
     loadScene(sceneName) {
@@ -197,11 +199,18 @@ export const useLearningChatStore = defineStore("learningChat", {
           role: m.role,
           content: m.text,
         }));
+
         const result = await verifySceneGoal({
           history,
           verification: this.currentScene.verification,
         });
+
         this.verificationResult = result; // { sucess, justification }
+
+        if (result && result.sucess) {
+          this.sceneCompleted = true;
+        }
+
         return result;
       } finally {
         this.summaryLoading = false;

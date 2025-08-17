@@ -186,7 +186,7 @@ export async function tokenizeChineseText(text) {
 
 export async function gradeUserMessage({ message, userLevel, topic }) {
   const systemPrompt = `
-    You are a supportive Chinese teacher. Evaluate the students text based on the following Rubric Criteria. The feedback directed at the student should be in english.
+    You are a supportive Chinese teacher. Evaluate the students text based on the following Rubric Criteria. The explenations for the grading should be in english. The improved sentence should be chinese.
 
     Rubric Criteria:
     Grammar & Syntax: The accuracy and complexity of sentence structures.
@@ -244,42 +244,15 @@ export async function gradeUserMessage({ message, userLevel, topic }) {
   return null;
 }
 
-export async function generateConversationSummary({ history, userLevel }) {
-  const { data } = await openAiClient.post("/chat/completions", {
-    model: TEXT_MODEL,
-    messages: [
-      {
-        role: "system",
-        content:
-          "Summarize the conversation for a Chinese learner at the given level. Keep it short and readable.",
-      },
-      ...history.map((m) => ({ role: m.role, content: m.text })),
-    ],
-    response_format: {
-      type: "json_schema",
-      json_schema: summarySchema,
-    },
-  });
-
-  if (data.choices && data.choices[0]?.message?.content) {
-    return JSON.parse(data.choices[0].message.content);
-  }
-  return null;
-}
-
 export async function verifySceneGoal({ history, verification }) {
   const messages = [
     {
       role: "system",
       content:
-        "You are a Chinese roleplay assistant." +
-        "\nYou will now evaluate whether the user achieved the scene goal. Reply ONLY with JSON using the provided schema.",
+        "You are a Chinese teacher." +
+        `\nYou will now evaluate whether the user (your student) achieved the roleplay goal: ${verification}. Reply ONLY with JSON using the provided schema. If achieved, set success to true, otherwise false. Provide a brief explanation in ENGLISH in the justification field. Return only JSON.`,
     },
     ...history,
-    {
-      role: "user",
-      content: `场景目标: ${verification}\n请判断用户是否完成该目标。如果完成, sucess 设为 true, 否则 false。用简短中文解释理由到 justification。只返回 JSON。`,
-    },
   ];
 
   const sceneVerificationSchema = {

@@ -8,7 +8,7 @@ import { useLearningChatStore } from "../stores/learningChat";
 const $q = useQuasar();
 const router = useRouter();
 const store = useLearningChatStore();
-const { topic, messages, interestingWords, assistantLoading } = storeToRefs(store);
+const { topic, messages, interestingWords, assistantLoading, sceneCompleted } = storeToRefs(store);
 
 const isBusy = computed(() => store.isBusy);
 const input = ref("");
@@ -28,7 +28,7 @@ async function endConversation() {
     const result = await store.endConversation();
     if (result) {
       $q.dialog({
-        title: result.sucess ? '目标达成' : '尚未达成',
+        title: result.sucess ? 'Success!!!' : 'Your are not finished yet.',
         message: `${result.justification}`,
         cancel: {
           label: 'Continue',
@@ -54,8 +54,19 @@ async function endConversation() {
   <div class="relative-position q-pa-md full-height">
     <div class="chat-layout full-height">
       <div class="row justify-between items-center">
-        <div class="text-subtitle1">
+        <div class="text-subtitle1 row items-center q-gutter-sm">
           {{ store.currentScene?.title || topic }}
+          <q-icon
+            v-if="sceneCompleted"
+            name="check_circle"
+            color="positive"
+            size="md"
+            class="q-ml-sm"
+          >
+            <q-tooltip class="bg-positive">
+              Scene goal completed successfully!
+            </q-tooltip>
+          </q-icon>
         </div>
         <div class="row items-center q-gutter-sm">
           <q-btn

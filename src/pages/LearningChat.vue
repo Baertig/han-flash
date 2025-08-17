@@ -11,7 +11,7 @@ const selectedGrading = computed(() => selectedMessage.value?.meta?.grading || n
 </script>
 
 <template>
-  <div class="holy-grail">
+  <div class="holy-grail" style="container-type: size;">
     <aside class="left">
         <q-expansion-item
           icon="star"
@@ -38,7 +38,7 @@ const selectedGrading = computed(() => selectedMessage.value?.meta?.grading || n
         </q-expansion-item>
     </aside>
 
-    <main class="center">
+    <main class="center" style="height: 100cqh">
       <LLMChat />
     </main>
 

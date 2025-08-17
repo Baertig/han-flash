@@ -67,7 +67,7 @@ function send() {
       </div>
     </div>
 
-    <div v-else class="q-gutter-md full-height column">
+    <div v-else class="chat-layout full-height">
       <div class="row justify-between items-center">
         <div class="text-subtitle1">
           Level: {{ level }} · Topic: {{ topic }}
@@ -84,7 +84,6 @@ function send() {
 
       <div
         class="q-pa-sm bg-grey-2 chat-surface"
-        style="border-radius: 8px; overflow-y: auto"
       >
         <div
           v-for="m in messages"
@@ -202,7 +201,7 @@ function send() {
         </q-chat-message>
       </div>
 
-      <div class="row items-center q-gutter-sm q-mt-auto">
+      <div class="row items-center q-gutter-sm">
         <q-input
           v-model="input"
           class="col-grow"
@@ -220,7 +219,17 @@ function send() {
 <style scoped>
 .chat-surface {
   position: relative;
+  border-radius: 8px; 
+  overflow-y: auto;
+  min-height: 0;
 }
+
+.chat-layout {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 16px;
+}
+
 .hanzi {
   font-size: 1.8rem;
   line-height: 2.2rem;

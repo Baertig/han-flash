@@ -127,11 +127,7 @@ export async function generateImageIdeas(word) {
   return result.ideas;
 }
 
-export async function generateLearningChatAssistantReply({
-  systemPrompt,
-  history,
-  userLevel,
-}) {
+export async function generateLearningChatAssistantReply({ systemPrompt, history }) {
   const messages = [
     {
       role: "system",

@@ -1,25 +1,25 @@
 {
-    "name": "learning_chat_reply",
+    "name": "text_tokenization",
     "schema": {
         "type": "object",
         "properties": {
             "tokens": {
                 "type": "array",
-                "description": "Assistant reply split by word boundaries with translation and pinyin for each token.",
+                "description": "Text split by word boundaries with translation and pinyin for each word.",
                 "items": {
                     "type": "object",
                     "properties": {
                         "word": {
                             "type": "string",
-                            "description": "The exact Chinese word or token to display, in order."
+                            "description": "The exact Chinese word or to display, in order."
                         },
                         "pinyin": {
                             "type": "string",
-                            "description": "Pinyin for the token."
+                            "description": "Pinyin for the word."
                         },
                         "translation": {
                             "type": "string",
-                            "description": "A concise English translation for the token."
+                            "description": "English translation for the word."
                         }
                     },
                     "required": [
@@ -29,15 +29,10 @@
                     ],
                     "additionalProperties": false
                 }
-            },
-            "suggested_followup_question": {
-                "type": "string",
-                "description": "A short follow-up question in Chinese appropriate for the user level to keep the conversation going."
             }
         },
         "required": [
-            "tokens",
-            "suggested_followup_question"
+            "tokens"
         ],
         "additionalProperties": false
     },

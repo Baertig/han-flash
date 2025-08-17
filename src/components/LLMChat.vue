@@ -13,10 +13,6 @@ const { topic, messages, interestingWords, assistantLoading } = storeToRefs(stor
 const isBusy = computed(() => store.isBusy);
 const input = ref("");
 
-onMounted(() => {
-  store.initConversation();
-});
-
 function send() {
   const content = input.value;
   input.value = "";
@@ -160,21 +156,28 @@ async function endConversation() {
                     color="grey-8"
                     text-color="white"
                     class="q-mr-xs"
-                    >N {{ m.meta.grading.naturalness }}/5</q-chip
+                    >G {{ m.meta.grading.grammarAndSyntax }}/4</q-chip
                   >
                   <q-chip
                     dense
                     color="grey-8"
                     text-color="white"
                     class="q-mr-xs"
-                    >G {{ m.meta.grading.grammar }}/5</q-chip
+                    >V {{ m.meta.grading.vocabulary }}/4</q-chip
                   >
                   <q-chip
                     dense
                     color="grey-8"
                     text-color="white"
                     class="q-mr-xs"
-                    >C {{ m.meta.grading.complexity }}/5</q-chip
+                    >I {{ m.meta.grading.interactiveCommunication }}/4</q-chip
+                  >
+                  <q-chip
+                    dense
+                    color="grey-8"
+                    text-color="white"
+                    class="q-mr-xs"
+                    >C {{ m.meta.grading.contentAndTaskFulfillment }}/4</q-chip
                   >
                 </template>
               </div>

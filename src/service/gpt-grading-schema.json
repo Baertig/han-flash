@@ -3,56 +3,68 @@
     "schema": {
         "type": "object",
         "properties": {
-            "naturalness": {
+            "grammarAndSyntax": {
                 "type": "integer",
-                "minimum": 1,
-                "maximum": 5,
-                "description": "Score 1-5 for how natural the sentence sounds."
+                "minimum": 0,
+                "maximum": 4,
+                "description": "Score 0-4 for according to the rubric criteria"
             },
-            "grammar": {
+            "vocabulary": {
                 "type": "integer",
-                "minimum": 1,
-                "maximum": 5,
-                "description": "Score 1-5 for grammar correctness."
+                "minimum": 0,
+                "maximum": 4,
+                "description": "Score 0-4 for according to the rubric criteria"
             },
-            "complexity": {
+            "interactiveCommunication": {
                 "type": "integer",
-                "minimum": 1,
-                "maximum": 5,
-                "description": "Score 1-5 for lexical and structural complexity relative to user level."
+                "minimum": 0,
+                "maximum": 4,
+                "description": "Score 0-4 for according to the rubric criteria"
+            },
+            "contentAndTaskFulfillment": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4,
+                "description": "Score 0-4 for according to the rubric criteria"
             },
             "explanations": {
                 "type": "object",
                 "properties": {
-                    "naturalness": {
+                    "grammarAndSyntax": {
                         "type": "string",
-                        "description": "Why this score and how to sound more natural."
+                        "description": "Why this score"
                     },
-                    "grammar": {
+                    "vocabulary": {
                         "type": "string",
-                        "description": "Why this score and how to fix grammar issues."
+                        "description": "Why this score"
                     },
-                    "complexity": {
+                    "interactiveCommunication": {
                         "type": "string",
-                        "description": "Why this score and how to adjust complexity."
+                        "description": "Score 0-4 for according to the rubric criteria"
+                    },
+                    "contentAndTaskFulfillment": {
+                        "type": "string",
+                        "description": "Score 0-4 for according to the rubric criteria"
                     }
                 },
                 "required": [
-                    "naturalness",
-                    "grammar",
-                    "complexity"
+                    "grammarAndSyntax",
+                    "vocabulary",
+                    "interactiveCommunication",
+                    "contentAndTaskFulfillment"
                 ],
                 "additionalProperties": false
             },
             "suggested_improved_sentence": {
                 "type": "string",
-                "description": "A version of the sentence that improves on the user's attempt, at the same level."
+                "description": "A version of the sentence that improves on the user's attempt"
             }
         },
         "required": [
-            "naturalness",
-            "grammar",
-            "complexity",
+            "grammarAndSyntax",
+            "vocabulary",
+            "interactiveCommunication",
+            "contentAndTaskFulfillment",
             "explanations",
             "suggested_improved_sentence"
         ],

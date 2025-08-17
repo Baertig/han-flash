@@ -59,15 +59,17 @@ onMounted(() => {
         <div v-if="!selectedGrading" class="text-grey-7">Select one of your messages to see details.</div>
         <div v-else>
           <div class="q-mb-sm">
-            <div><b>自然度</b>: {{ selectedGrading.naturalness }}/5</div>
-            <div><b>语法</b>: {{ selectedGrading.grammar }}/5</div>
-            <div><b>复杂度</b>: {{ selectedGrading.complexity }}/5</div>
+            <div><b>语法和句法</b>: {{ selectedGrading.grammarAndSyntax }}/4</div>
+            <div><b>词汇</b>: {{ selectedGrading.vocabulary }}/4</div>
+            <div><b>互动交流</b>: {{ selectedGrading.interactiveCommunication }}/4</div>
+            <div><b>内容和任务完成</b>: {{ selectedGrading.contentAndTaskFulfillment }}/4</div>
           </div>
           <div class="q-mb-sm">
             <div class="text-subtitle2 q-mb-xs">Explanations</div>
-            <div><b>自然度:</b> {{ selectedGrading.explanations.naturalness }}</div>
-            <div><b>语法:</b> {{ selectedGrading.explanations.grammar }}</div>
-            <div><b>复杂度:</b> {{ selectedGrading.explanations.complexity }}</div>
+            <div><b>语法和句法:</b> {{ selectedGrading.explanations.grammarAndSyntax }}</div>
+            <div><b>词汇:</b> {{ selectedGrading.explanations.vocabulary }}</div>
+            <div><b>互动交流:</b> {{ selectedGrading.explanations.interactiveCommunication }}</div>
+            <div><b>内容和任务完成:</b> {{ selectedGrading.explanations.contentAndTaskFulfillment }}</div>
           </div>
           <div>
             <div class="text-subtitle2 q-mb-xs">Improved sentence</div>
@@ -78,9 +80,10 @@ onMounted(() => {
         <q-separator class="q-my-md" />
         <div class="text-subtitle2 q-mb-xs">Averages</div>
         <div v-if="avgScores">
-          <div>Naturalness: <b>{{ avgScores.naturalness }}</b></div>
-          <div>Grammar: <b>{{ avgScores.grammar }}</b></div>
-          <div>Complexity: <b>{{ avgScores.complexity }}</b></div>
+          <div>Grammar & Syntax: <b>{{ avgScores.grammarAndSyntax }}</b></div>
+          <div>Vocabulary: <b>{{ avgScores.vocabulary }}</b></div>
+          <div>Interactive Communication: <b>{{ avgScores.interactiveCommunication }}</b></div>
+          <div>Content & Task Fulfillment: <b>{{ avgScores.contentAndTaskFulfillment }}</b></div>
         </div>
         <div v-else class="text-grey-7">No graded messages yet.</div>
       </div>

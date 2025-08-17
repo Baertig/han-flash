@@ -1,7 +1,8 @@
 import { defineStore } from "pinia";
 import {
   gradeUserMessage,
-  generateLearningChatAssistantReply,
+  generateLearningChatAssistantText,
+  tokenizeChineseText,
   verifySceneGoal,
 } from "../service/openai-client";
 import { scenes } from "../service/scenes";
@@ -44,18 +45,31 @@ export const useLearningChatStore = defineStore("learningChat", {
       if (!arr.length) return null;
       const acc = arr.reduce(
         (o, m) => {
-          o.naturalness += m.meta.grading.naturalness || 0;
-          o.grammar += m.meta.grading.grammar || 0;
-          o.complexity += m.meta.grading.complexity || 0;
+          o.grammarAndSyntax += m.meta.grading.grammarAndSyntax || 0;
+          o.vocabulary += m.meta.grading.vocabulary || 0;
+          o.interactiveCommunication +=
+            m.meta.grading.interactiveCommunication || 0;
+          o.contentAndTaskFulfillment +=
+            m.meta.grading.contentAndTaskFulfillment || 0;
           return o;
         },
-        { naturalness: 0, grammar: 0, complexity: 0 }
+        {
+          grammarAndSyntax: 0,
+          vocabulary: 0,
+          interactiveCommunication: 0,
+          contentAndTaskFulfillment: 0,
+        }
       );
       const len = arr.length;
       return {
-        naturalness: (acc.naturalness / len).toFixed(1),
-        grammar: (acc.grammar / len).toFixed(1),
-        complexity: (acc.complexity / len).toFixed(1),
+        grammarAndSyntax: (acc.grammarAndSyntax / len).toFixed(1),
+        vocabulary: (acc.vocabulary / len).toFixed(1),
+        interactiveCommunication: (acc.interactiveCommunication / len).toFixed(
+          1
+        ),
+        contentAndTaskFulfillment: (
+          acc.contentAndTaskFulfillment / len
+        ).toFixed(1),
       };
     },
 
@@ -150,18 +164,23 @@ export const useLearningChatStore = defineStore("learningChat", {
           role: m.role,
           content: m.text,
         }));
-        const reply = await generateLearningChatAssistantReply({
+
+        // First, generate the plain text response
+        const text = await generateLearningChatAssistantText({
           userLevel: this.level,
           history,
           systemPrompt: this.systemPrompt,
         });
+
+        // Then tokenize the response
+        const tokens = await tokenizeChineseText(text);
+
         const assMsg = {
           id: this.nextId++,
           role: "assistant",
-          text: reply.tokens.map((t) => t.word).join(""),
+          text,
           meta: {
-            tokens: reply.tokens,
-            suggested: reply.suggested_followup_question,
+            tokens: tokens,
           },
         };
         this.messages.push(assMsg);
@@ -180,7 +199,6 @@ export const useLearningChatStore = defineStore("learningChat", {
         }));
         const result = await verifySceneGoal({
           history,
-          systemPrompt: this.systemPrompt,
           verification: this.currentScene.verification,
         });
         this.verificationResult = result; // { sucess, justification }

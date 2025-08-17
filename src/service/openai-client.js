@@ -3,7 +3,7 @@ import axios from "axios";
 import { useSettingsStore } from "../stores/settings";
 import translationSchema from "./gpt-translation-schema.json";
 import imageIdeasSchema from "./gpt-image-ideas-schema.json";
-import chatReplySchema from "./gpt-chat-reply-schema.json";
+import tokenizationSchema from "./gpt-tokenization-schema.json";
 import gradingSchema from "./gpt-grading-schema.json";
 import summarySchema from "./gpt-conversation-summary-schema.json";
 
@@ -27,7 +27,7 @@ openAiClient.interceptors.request.use((config) => {
   return config;
 });
 
-const TEXT_MODEL = "gpt-4o";
+const TEXT_MODEL = "gpt-5-nano";
 const AUDIO_MODEL = "gpt-4o-mini-tts";
 const IMAGE_MODEL = "gpt-image-1";
 
@@ -127,16 +127,17 @@ export async function generateImageIdeas(word) {
   return result.ideas;
 }
 
-export async function generateLearningChatAssistantReply({
+export async function generateLearningChatAssistantText({
   systemPrompt,
   history,
+  userLevel,
 }) {
   const messages = [
     {
       role: "system",
       content:
         systemPrompt ||
-        "You are a helpful Chinese conversation partner. Always reply in Chinese appropriate to the user's CEFR level. Try to teach the user something about the topic he chose. Split your reply into tokens using the provided JSON schema so the UI can show per-word pinyin and translation.",
+        `You are a helpful Chinese conversation partner. Always reply in Chinese appropriate to the user's ${userLevel} CEFR level. Try to teach the user something about the topic he chose. Respond with natural Chinese text only.`,
     },
     ...history,
   ];
@@ -144,32 +145,89 @@ export async function generateLearningChatAssistantReply({
   const { data } = await openAiClient.post("/chat/completions", {
     model: TEXT_MODEL,
     messages,
-    response_format: {
-      type: "json_schema",
-      json_schema: chatReplySchema,
-    },
   });
 
   if (data.choices && data.choices[0]?.message?.content) {
-    return JSON.parse(data.choices[0].message.content);
+    return data.choices[0].message.content.trim();
   }
 
   console.error("Data missing from openai response", data);
-  return { tokens: [] };
+  return "";
 }
 
-export async function gradeUserMessage({ message, userLevel, topic }) {
+export async function tokenizeChineseText(text) {
   const { data } = await openAiClient.post("/chat/completions", {
     model: TEXT_MODEL,
     messages: [
       {
         role: "system",
         content:
-          "You are a strict but supportive Chinese teacher. Evaluate a single student sentence and return scores 1-5 for naturalness, grammar, and complexity (relative to the student's level). Provide helpful explanations and an improved sentence.",
+          "You are a Chinese language translation assistant. Split the given Chinese text into individual words and provide pinyin and English translation for each word. Preserve the exact order",
       },
       {
         role: "user",
-        content: `Student CEFR level: ${userLevel}. Topic: ${topic}.\nSentence: ${message}`,
+        content: `Please translate this Chinese text and provide pinyin and translation for each word: "${text}"`,
+      },
+    ],
+    response_format: {
+      type: "json_schema",
+      json_schema: tokenizationSchema,
+    },
+  });
+
+  if (data.choices && data.choices[0]?.message?.content) {
+    const result = JSON.parse(data.choices[0].message.content);
+    return result.tokens;
+  }
+
+  console.error("Data missing from openai tokenization response", data);
+  return [];
+}
+
+export async function gradeUserMessage({ message, userLevel, topic }) {
+  const systemPrompt = `
+    You are a supportive Chinese teacher. Evaluate the students text based on the following Rubric Criteria. The feedback directed at the student should be in english.
+
+    Rubric Criteria:
+    Grammar & Syntax: The accuracy and complexity of sentence structures.
+      - Level 4 (Excellent): Demonstrates a wide range of complex grammatical structures with a high degree of accuracy. Errors are rare and are often corrected immediately.
+      - Level 3 (Proficient): Uses a mix of simple and complex structures with good control. Minor grammatical errors may occur but do not obscure meaning.
+      - Level 2 (Developing): Uses basic grammatical structures but makes frequent errors, particularly with tenses or more complex constructions. Errors sometimes cause confusion.
+      - Level 1 (Limited): Makes pervasive and consistent grammatical errors, even with basic structures, which makes the message difficult to understand.
+      - Level 0 (Unacceptable): No comprehensible grammatical structures are used.
+
+    Vocabulary: The range, precision, and appropriateness of word choice.
+      - Level 4 (Excellent): Uses a broad and precise range of vocabulary, including idiomatic expressions, to express ideas effectively. Word choice is consistently appropriate for the context.
+      - Level 3 (Proficient): Uses a sufficient range of vocabulary to communicate clearly. May occasionally search for a word or use a less precise one, but meaning is generally clear.
+      - Level 2 (Developing): Has a limited vocabulary and often relies on simple, repeated words. May use inappropriate words or phrases that cause confusion.
+      - Level 1 (Limited): Has a very limited vocabulary and cannot express ideas beyond the most basic concepts. Frequent use of paraphrasing due to lack of words.
+      - Level 0 (Unacceptable): Vocabulary is insufficient to convey any meaning.
+
+    Interactive Communication: The ability to engage in a dialogue, respond, and manage the conversation.
+      - Level 4 (Excellent): Initiates and responds to turns in the dialogue with ease. Asks for and gives clarification naturally and effectively. Effortlessly manages the conversation flow.
+      - Level 3 (Proficient): Participates effectively in the dialogue. Is able to initiate, respond, and take turns appropriately. May occasionally need help or time to formulate a response.
+      - Level 2 (Developing): Can respond to direct questions but has difficulty initiating conversation or elaborating. Requires prompts or rephrasing from the other speaker to maintain the dialogue.
+      - Level 1 (Limited): Responds with single words or short phrases. Is unable to initiate or sustain the conversation. Communication often breaks down.
+      - Level 0 (Unacceptable): Does not respond or engage in any way.
+
+    Content & Task Fulfillment: How well the student addresses the topic or prompt.
+      - Level 4 (Excellent): The content is highly relevant, detailed, and well-developed. The student fully addresses all aspects of the task and provides thoughtful and insightful contributions.
+      - Level 3 (Proficient): The content is relevant to the topic and the student addresses the task sufficiently. Ideas are clear but may lack some depth or elaboration.
+      - Level 2 (Developing): The content is somewhat relevant, but the student may stray off-topic or fail to address all aspects of the task. Ideas are basic and lack detail.
+      - Level 1 (Limited): The content is often irrelevant or disconnected from the topic. The student shows little understanding of the task requirements.
+      - Level 0 (Unacceptable): The student's contribution has no relevance to the task or topic.
+  `;
+
+  const { data } = await openAiClient.post("/chat/completions", {
+    model: TEXT_MODEL,
+    messages: [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
+      {
+        role: "user",
+        content: `Student CEFR level: ${userLevel}. \n text: ${message}`,
       },
     ],
     response_format: {

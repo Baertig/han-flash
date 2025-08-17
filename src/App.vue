@@ -5,14 +5,24 @@ import { useRouter } from 'vue-router';
 import { useSettingsStore } from './stores/settings';
 import SettingsDialog from './dialogs/SettingsDialog.vue';
 import { storeToRefs } from 'pinia';
+import { useLearningChatStore } from './stores/learningChat';
 
 const { hasApiKey } = storeToRefs(useSettingsStore());
 const router = useRouter();
+const chatStore = useLearningChatStore();
 
 function openSettingsDialog() {
   Dialog.create({
     component: SettingsDialog
   });
+}
+
+function goChat() {
+  if (chatStore.currentScene) {
+    router.push({ name: 'LearningChat', query: { scene: chatStore.currentScene.name } });
+  } else {
+    router.push({ name: 'ScenesSelection' });
+  }
 }
 </script>
 
@@ -20,9 +30,10 @@ function openSettingsDialog() {
   <q-layout view="hHh lpR fFf" style="height: 100vh">
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
-        <q-toolbar-title>HanFlash</q-toolbar-title>
+        <q-toolbar-title class="cursor-pointer" @click="router.push({ name: 'ScenesSelection' })">HanFlash</q-toolbar-title>
         <q-space />
-        <q-btn flat dense label="Chat" icon="chat" @click="router.push({ name: 'LearningChat' })" />
+        <q-btn flat dense label="Scenes" icon="dashboard" @click="router.push({ name: 'ScenesSelection' })" />
+        <q-btn flat dense label="Chat" icon="chat" @click="goChat" />
         <q-btn flat dense round icon="settings" @click="openSettingsDialog" />
       </q-toolbar>
     </q-header>

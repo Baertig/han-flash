@@ -1,31 +1,21 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { storeToRefs } from "pinia";
+import { useRouter } from 'vue-router';
 import { useLearningChatStore } from "../stores/learningChat";
 
 const $q = useQuasar();
+const router = useRouter();
 const store = useLearningChatStore();
-const {
-  level,
-  topic,
-  practiceWordsInput,
-  started,
-  messages,
-  interestingWords,
-  assistantLoading,
-} = storeToRefs(store);
+const { topic, messages, interestingWords, assistantLoading } = storeToRefs(store);
 
 const isBusy = computed(() => store.isBusy);
 const input = ref("");
 
-function start() {
-  store
-    .startConversation()
-    .catch(() =>
-      $q.notify({ type: "negative", message: "Failed to start conversation" })
-    );
-}
+onMounted(() => {
+  store.initConversation();
+});
 
 function send() {
   const content = input.value;
@@ -36,50 +26,51 @@ function send() {
       $q.notify({ type: "negative", message: "Assistant failed to reply" })
     );
 }
+
+async function endConversation() {
+  try {
+    const result = await store.endConversation();
+    if (result) {
+      $q.dialog({
+        title: result.sucess ? '目标达成' : '尚未达成',
+        message: `${result.justification}`,
+        cancel: {
+          label: 'Continue',
+          color: 'primary',
+        },
+        ok: {
+          label: 'Finish',
+          color: 'negative'
+        },
+        persistent: true
+      }).onOk(() => {
+        store.reset();
+        router.push({ name: 'ScenesSelection' });
+      });
+    }
+  } catch (e) {
+    $q.notify({ type: 'negative', message: 'Verification failed' });
+  }
+}
 </script>
 
 <template>
   <div class="relative-position q-pa-md full-height">
-    <div v-if="!started">
-      <q-input
-        v-model="practiceWordsInput"
-        type="textarea"
-        label="Words to practice (comma/space separated)"
-        autogrow
-      />
-
-      <div class="row q-col-gutter-md">
-        <div class="col-6">
-          <q-select
-            v-model="level"
-            :options="['A1', 'A2', 'B1', 'B2', 'C1', 'C2']"
-            label="Level"
-          />
-        </div>
-
-        <div class="col-6">
-          <q-input v-model="topic" label="Topic" />
-        </div>
-      </div>
-
-      <div class="row items-center q-gutter-sm q-mt-sm">
-        <q-btn color="primary" label="Start" :disable="isBusy" @click="start" />
-      </div>
-    </div>
-
-    <div v-else class="chat-layout full-height">
+    <div class="chat-layout full-height">
       <div class="row justify-between items-center">
         <div class="text-subtitle1">
-          Level: {{ level }} · Topic: {{ topic }}
+          {{ store.currentScene?.title || topic }}
         </div>
-        <q-btn
-          flat
-          color="negative"
-          icon="stop"
-          label="End conversation"
-          :disable="isBusy"
-          @click="store.endConversation()"
-        />
+        <div class="row items-center q-gutter-sm">
+          <q-btn
+            flat
+            color="negative"
+            icon="stop"
+            label="End conversation"
+            :disable="isBusy"
+            @click="endConversation"
+          />
+        </div>
       </div>
 
       <div
@@ -202,14 +193,7 @@ function send() {
       </div>
 
       <div class="row items-center q-gutter-sm">
-        <q-input
-          v-model="input"
-          class="col-grow"
-          dense
-          outlined
-          placeholder="Reply in Chinese..."
-          @keyup.enter="send"
-        />
+        <q-input v-model="input" class="col-grow" dense outlined placeholder="Type your first message in Chinese..." @keyup.enter="send" />
         <q-btn color="primary" label="Send" :disable="isBusy" @click="send" />
       </div>
     </div>

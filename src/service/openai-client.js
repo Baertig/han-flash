@@ -127,7 +127,10 @@ export async function generateImageIdeas(word) {
   return result.ideas;
 }
 
-export async function generateLearningChatAssistantReply({ systemPrompt, history }) {
+export async function generateLearningChatAssistantReply({
+  systemPrompt,
+  history,
+}) {
   const messages = [
     {
       role: "system",
@@ -204,4 +207,58 @@ export async function generateConversationSummary({ history, userLevel }) {
     return JSON.parse(data.choices[0].message.content);
   }
   return null;
+}
+
+export async function verifySceneGoal({ history, verification }) {
+  const messages = [
+    {
+      role: "system",
+      content:
+        "You are a Chinese roleplay assistant." +
+        "\nYou will now evaluate whether the user achieved the scene goal. Reply ONLY with JSON using the provided schema.",
+    },
+    ...history,
+    {
+      role: "user",
+      content: `场景目标: ${verification}\n请判断用户是否完成该目标。如果完成, sucess 设为 true, 否则 false。用简短中文解释理由到 justification。只返回 JSON。`,
+    },
+  ];
+
+  const sceneVerificationSchema = {
+    name: "scene_verification",
+    schema: {
+      type: "object",
+      properties: {
+        sucess: {
+          type: "boolean",
+          description: "Whether the user achieved the goal",
+        },
+        justification: {
+          type: "string",
+          description: "Short Chinese explanation why the goal was met or not",
+        },
+      },
+      required: ["sucess", "justification"],
+      additionalProperties: false,
+    },
+  };
+
+  const { data } = await openAiClient.post("/chat/completions", {
+    model: TEXT_MODEL,
+    messages,
+    response_format: {
+      type: "json_schema",
+      json_schema: sceneVerificationSchema,
+    },
+  });
+
+  if (data.choices && data.choices[0]?.message?.content) {
+    try {
+      return JSON.parse(data.choices[0].message.content);
+    } catch (e) {
+      console.error("Failed parsing verification JSON", e);
+    }
+  }
+  console.error("Data missing from openai verification response", data);
+  return { sucess: false, justification: "无法判定 (解析失败)" };
 }

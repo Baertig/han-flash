@@ -1,5 +1,6 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import LLMChat from '../components/LLMChat.vue';
 import { useLearningChatStore } from '../stores/learningChat';
@@ -8,6 +9,16 @@ const store = useLearningChatStore();
 const { interestingWords, selectedMessage, avgScores } = storeToRefs(store);
 
 const selectedGrading = computed(() => selectedMessage.value?.meta?.grading || null);
+
+const route = useRoute();
+
+onMounted(() => {
+  const sceneName = route.query.scene;
+  if (sceneName) {
+    store.loadScene(sceneName);
+  }
+});
+
 </script>
 
 <template>

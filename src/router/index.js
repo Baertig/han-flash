@@ -3,9 +3,10 @@ import FlashcardList from "../pages/FlashcardList.vue";
 import CardPage from "../pages/CardPage.vue";
 import NotFound from "../pages/NotFound.vue";
 import LearningChat from "../pages/LearningChat.vue";
+import ScenesSelection from "../pages/ScenesSelection.vue";
 
 const routes = [
-  { path: "/", redirect: "/flashcards" },
+  { path: "/", name: "ScenesSelection", component: ScenesSelection },
   { path: "/flashcards", name: "Flashcards", component: FlashcardList },
   { path: "/new-card", name: "NewCard", component: CardPage },
   { path: "/card/:id", name: "EditCard", component: CardPage, props: true },

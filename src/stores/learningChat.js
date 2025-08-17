@@ -2,15 +2,15 @@ import { defineStore } from "pinia";
 import {
   gradeUserMessage,
   generateLearningChatAssistantReply,
-  generateConversationSummary,
+  verifySceneGoal,
 } from "../service/openai-client";
+import { scenes } from "../service/scenes";
 
 export const useLearningChatStore = defineStore("learningChat", {
   state: () => ({
     level: "A1",
     topic: "日常对话",
     practiceWordsInput: "",
-    started: false,
 
     messages: [], // { id, role: 'assistant'|'user', text, meta: { tokens?, grading?, gradingLoading? } }
     nextId: 1,
@@ -22,6 +22,8 @@ export const useLearningChatStore = defineStore("learningChat", {
     summaryData: null,
 
     selectedMessageId: null,
+    currentScene: null, // scene object
+    verificationResult: null,
   }),
   getters: {
     isBusy: (s) => s.assistantLoading || s.summaryLoading,
@@ -59,13 +61,14 @@ export const useLearningChatStore = defineStore("learningChat", {
 
     selectedMessage: (s) =>
       s.messages.find((m) => m.id === s.selectedMessageId) || null,
+
+    systemPrompt: (s) => s.currentScene?.systemPrompt || null,
   },
   actions: {
     reset() {
       this.level = "A1";
       this.topic = "日常对话";
       this.practiceWordsInput = "";
-      this.started = false;
       this.messages = [];
       this.nextId = 1;
       this.interestingWords = [];
@@ -73,6 +76,14 @@ export const useLearningChatStore = defineStore("learningChat", {
       this.summaryLoading = false;
       this.summaryData = null;
       this.selectedMessageId = null;
+      this.currentScene = null;
+      this.verificationResult = null;
+    },
+
+    loadScene(sceneName) {
+      const scn = scenes.find((s) => s.name === sceneName);
+      this.currentScene = scn;
+      if (scn?.title) this.topic = scn.title; // show title as topic / header
     },
 
     setLevel(val) {
@@ -95,41 +106,6 @@ export const useLearningChatStore = defineStore("learningChat", {
       const idx = this.interestingWords.findIndex((w) => w.word === token.word);
       if (idx >= 0) this.interestingWords.splice(idx, 1);
       else this.interestingWords.push(token);
-    },
-
-    async startConversation() {
-      this.started = true;
-      try {
-        this.assistantLoading = true;
-        const history = [
-          {
-            role: "user",
-            content: `请用纯中文开始一段对话。主题: ${
-              this.topic
-            }。适应学生水平: ${
-              this.level
-            }。尽量使用以下词汇（如果合适）: ${this.practiceWords.join(
-              ", "
-            )}。`,
-          },
-        ];
-        const reply = await generateLearningChatAssistantReply({
-          userLevel: this.level,
-          history,
-        });
-        const msg = {
-          id: this.nextId++,
-          role: "assistant",
-          text: reply.tokens.map((t) => t.word).join(""),
-          meta: {
-            tokens: reply.tokens,
-            suggested: reply.suggested_followup_question,
-          },
-        };
-        this.messages.push(msg);
-      } finally {
-        this.assistantLoading = false;
-      }
     },
 
     async sendMessage(content) {
@@ -177,6 +153,7 @@ export const useLearningChatStore = defineStore("learningChat", {
         const reply = await generateLearningChatAssistantReply({
           userLevel: this.level,
           history,
+          systemPrompt: this.systemPrompt,
         });
         const assMsg = {
           id: this.nextId++,
@@ -194,13 +171,20 @@ export const useLearningChatStore = defineStore("learningChat", {
     },
 
     async endConversation() {
+      if (!this.currentScene) return;
       try {
         this.summaryLoading = true;
-        const summary = await generateConversationSummary({
-          history: this.messages,
-          userLevel: this.level,
+        const history = this.messages.map((m) => ({
+          role: m.role,
+          content: m.text,
+        }));
+        const result = await verifySceneGoal({
+          history,
+          systemPrompt: this.systemPrompt,
+          verification: this.currentScene.verification,
         });
-        this.summaryData = summary;
+        this.verificationResult = result; // { sucess, justification }
+        return result;
       } finally {
         this.summaryLoading = false;
       }

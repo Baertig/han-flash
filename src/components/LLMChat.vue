@@ -60,27 +60,31 @@ async function endConversation() {
 <template>
   <div class="relative-position q-pa-md full-height">
     <div class="chat-layout full-height">
-      <div class="row justify-between items-center">
-        <div class="text-subtitle1 row items-center q-gutter-sm">
-          {{ store.currentScene?.title || topic }}
-          <q-icon
-            v-if="sceneCompleted"
-            name="check_circle"
-            color="positive"
-            size="md"
-            class="q-ml-sm"
-          >
-            <q-tooltip class="bg-positive">
-              Scene goal completed successfully!
-            </q-tooltip>
-          </q-icon>
+      <div class="chat-header row justify-between items-center">
+        <div class="header-content">
+          <div class="text-subtitle1 row items-center q-gutter-sm">
+            {{ store.currentScene?.title || topic }}
+            <q-icon
+              v-if="sceneCompleted"
+              name="check_circle"
+              color="positive"
+              size="md"
+              class="q-ml-sm"
+            >
+              <q-tooltip class="bg-positive">
+                Scene goal completed successfully!
+              </q-tooltip>
+            </q-icon>
+          </div>
+          <div v-if="store.currentScene?.task" class="text-body2 text-grey-7 q-mt-xs">
+            {{ store.currentScene.task }}
+          </div>
         </div>
         <div class="row items-center q-gutter-sm">
           <q-btn
             flat
             color="negative"
             icon="stop"
-            label="End conversation"
             :disable="isBusy"
             @click="endConversation"
           />
@@ -222,6 +226,19 @@ async function endConversation() {
 </template>
 
 <style scoped>
+.chat-header {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+}
+
+.header-content {
+  flex: 1;
+  min-width: 0; /* Allow text to wrap if needed */
+}
+
 .chat-surface {
   position: relative;
   border-radius: 8px; 
@@ -236,7 +253,7 @@ async function endConversation() {
 }
 
 .hanzi {
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   line-height: 2.2rem;
 }
 .token {

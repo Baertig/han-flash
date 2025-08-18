@@ -193,6 +193,11 @@ export const useLearningChatStore = defineStore("learningChat", {
 
     async endConversation() {
       if (!this.currentScene) return;
+
+      if (this.verificationResult) {
+        return this.verificationResult;
+      }
+
       try {
         this.summaryLoading = true;
         const history = this.messages.map((m) => ({

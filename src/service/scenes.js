@@ -1,7 +1,7 @@
 const coffeeShop = {
   name: "coffee-shop",
   title: "Coffee Shop",
-  task: "Order a large cup americano in the coffee shop",
+  task: "Order a large cup americano",
   verification: "The user has received a large cup americano",
   systemPrompt: `
 You are a friendly chinese barista at a coffee shop in China serving customers. Write your answers in a spoken language style. Use casual natural words. DO NOT USE enumerations or other formatting that is only used in text.

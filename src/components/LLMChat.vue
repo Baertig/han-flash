@@ -10,8 +10,15 @@ const router = useRouter();
 const store = useLearningChatStore();
 const { topic, messages, interestingWords, assistantLoading, sceneCompleted } = storeToRefs(store);
 
+const emit = defineEmits(['messageSelected']);
+
 const isBusy = computed(() => store.isBusy);
 const input = ref("");
+
+function selectMessage(messageId) {
+  store.selectMessage(messageId);
+  emit('messageSelected', messageId);
+}
 
 function send() {
   const content = input.value;
@@ -99,14 +106,14 @@ async function endConversation() {
             round
             icon="info"
             class="info-btn"
-            @click="store.selectMessage(m.id)"
+            @click="selectMessage(m.id)"
           />
           <q-chat-message
             :name="m.role === 'user' ? 'You' : '伙伴'"
             :text="[m.text]"
             :sent="m.role === 'user'"
             class="hanzi"
-            @click="m.role === 'user' && store.selectMessage(m.id)"
+            @click="m.role === 'user' && selectMessage(m.id)"
           >
             <template v-if="m.role === 'assistant' && m.meta?.tokens" #default>
               <div class="tokens-container">

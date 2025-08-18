@@ -1,16 +1,41 @@
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { useQuasar } from 'quasar';
 import LLMChat from '../components/LLMChat.vue';
+import InterestingWordsList from '../components/InterestingWordsList.vue';
+import GradingDetails from '../components/GradingDetails.vue';
 import { useLearningChatStore } from '../stores/learningChat';
 
+const $q = useQuasar();
 const store = useLearningChatStore();
 const { interestingWords, selectedMessage, avgScores } = storeToRefs(store);
 
-const selectedGrading = computed(() => selectedMessage.value?.meta?.grading || null);
-
 const route = useRoute();
+
+// Dialogs state
+const wordsDialogOpen = ref(false);
+const gradingDialogOpen = ref(false);
+
+// Responsive breakpoint detection
+const isSmallScreen = computed(() => $q.screen.lt.sm);
+const isExtraSmallScreen = computed(() => $q.screen.xs);
+
+// Show/hide asides based on breakpoints
+const showLeftAside = computed(() => !isSmallScreen.value);
+const showRightAside = computed(() => !isExtraSmallScreen.value);
+
+function removeInterestingWord(index) {
+  store.interestingWords.splice(index, 1);
+}
+
+function onMessageSelected(messageId) {
+  // If right aside is hidden, open grading dialog
+  if (!showRightAside.value) {
+    gradingDialogOpen.value = true;
+  }
+}
 
 onMounted(() => {
   const sceneName = route.query.scene;
@@ -18,76 +43,84 @@ onMounted(() => {
     store.loadScene(sceneName);
   }
 });
-
 </script>
 
 <template>
   <div class="holy-grail" style="container-type: size;">
-    <aside class="left">
-        <q-expansion-item
-          icon="star"
-          label="Interesting words"
-          v-if="interestingWords.length"
-        >
-          <q-list bordered separator>
-            <q-item v-for="(w, idx) in interestingWords" :key="idx">
-              <q-item-section>
-                <q-item-label>{{ w.word }} · {{ w.pinyin }}</q-item-label>
-                <q-item-label caption>{{ w.translation }}</q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-btn
-                  flat
-                  size="sm"
-                  color="negative"
-                  icon="delete"
-                  @click="store.interestingWords.splice(idx, 1)"
-                />
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-expansion-item>
+    <aside v-if="showLeftAside" class="left">
+      <InterestingWordsList
+        :interesting-words="interestingWords"
+        @remove="removeInterestingWord"
+      />
     </aside>
 
     <main class="center" style="height: 100cqh">
-      <LLMChat />
+      <LLMChat @message-selected="onMessageSelected" />
     </main>
 
-    <aside class="right">
-      <div class="grading-panel">
-        <div class="text-h6 q-mb-sm">Grading</div>
-        <div v-if="!selectedGrading" class="text-grey-7">Select one of your messages to see details.</div>
-        <div v-else>
-          <div class="q-mb-sm">
-            <div><b>语法和句法</b>: {{ selectedGrading.grammarAndSyntax }}/4</div>
-            <div><b>词汇</b>: {{ selectedGrading.vocabulary }}/4</div>
-            <div><b>互动交流</b>: {{ selectedGrading.interactiveCommunication }}/4</div>
-            <div><b>内容和任务完成</b>: {{ selectedGrading.contentAndTaskFulfillment }}/4</div>
-          </div>
-          <div class="q-mb-sm">
-            <div class="text-subtitle2 q-mb-xs">Explanations</div>
-            <div><b>语法和句法:</b> {{ selectedGrading.explanations.grammarAndSyntax }}</div>
-            <div><b>词汇:</b> {{ selectedGrading.explanations.vocabulary }}</div>
-            <div><b>互动交流:</b> {{ selectedGrading.explanations.interactiveCommunication }}</div>
-            <div><b>内容和任务完成:</b> {{ selectedGrading.explanations.contentAndTaskFulfillment }}</div>
-          </div>
-          <div>
-            <div class="text-subtitle2 q-mb-xs">Improved sentence</div>
-            <q-banner>{{ selectedGrading.suggested_improved_sentence }}</q-banner>
-          </div>
-        </div>
-
-        <q-separator class="q-my-md" />
-        <div class="text-subtitle2 q-mb-xs">Averages</div>
-        <div v-if="avgScores">
-          <div>Grammar & Syntax: <b>{{ avgScores.grammarAndSyntax }}</b></div>
-          <div>Vocabulary: <b>{{ avgScores.vocabulary }}</b></div>
-          <div>Interactive Communication: <b>{{ avgScores.interactiveCommunication }}</b></div>
-          <div>Content & Task Fulfillment: <b>{{ avgScores.contentAndTaskFulfillment }}</b></div>
-        </div>
-        <div v-else class="text-grey-7">No graded messages yet.</div>
-      </div>
+    <aside v-if="showRightAside" class="right">
+      <GradingDetails
+        :selected-message="selectedMessage"
+        :avg-scores="avgScores"
+      />
     </aside>
+
+    <q-page-sticky
+      v-if="!showLeftAside"
+      position="bottom-left"
+      :offset="[18, 77]"
+    >
+      <q-btn
+        fab
+        icon="star"
+        color="primary"
+        @click="wordsDialogOpen = true"
+      >
+        <q-badge
+          v-if="interestingWords.length > 0"
+          color="red"
+          floating
+        >
+          {{ interestingWords.length }}
+        </q-badge>
+      </q-btn>
+    </q-page-sticky>
+
+    <!-- Words Dialog -->
+    <q-dialog v-model="wordsDialogOpen">
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">Starred Words</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <InterestingWordsList
+            :interesting-words="interestingWords"
+            @remove="removeInterestingWord"
+          />
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Close" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Grading Dialog -->
+    <q-dialog v-model="gradingDialogOpen">
+      <q-card style="min-width: 400px; max-width: 600px">
+        <q-card-section>
+          <div class="text-h6">Message Grading</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <GradingDetails
+            :selected-message="selectedMessage"
+            :avg-scores="avgScores"
+          />
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Close" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -100,9 +133,35 @@ onMounted(() => {
   padding: 16px;
   height: 100%;
 }
-.left { grid-area: left; }
-.center { grid-area: center; }
-.right { grid-area: right; }
+
+.left { 
+  grid-area: left; 
+}
+
+.center { 
+  grid-area: center; 
+}
+
+.right { 
+  grid-area: right; 
+}
+
+/* Medium screens and below - hide left aside */
+@media (max-width: 1023.98px) {
+  .holy-grail {
+    grid-template-columns: minmax(400px, 1fr) 620px;
+    grid-template-areas: 'center right';
+  }
+}
+
+/* Small screens and below - hide both asides */
+@media (max-width: 599.98px) {
+  .holy-grail {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'center';
+    padding: 8px;
+  }
+}
 
 .placeholder {
   background: #f0f2f5;
@@ -110,12 +169,5 @@ onMounted(() => {
   border-radius: 8px;
   padding: 12px;
   color: #78909c;
-}
-
-.grading-panel {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 12px;
 }
 </style>

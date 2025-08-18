@@ -27,7 +27,7 @@ function goChat() {
 </script>
 
 <template>
-  <q-layout view="hHh lpR fFf" style="height: 100vh">
+  <q-layout view="hHh lpR fFf" style="height: 100dvh">
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-toolbar-title class="cursor-pointer" @click="router.push({ name: 'ScenesSelection' })">HanFlash</q-toolbar-title>

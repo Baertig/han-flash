@@ -30,8 +30,8 @@ function playScene(scene) {
     </div>
     <div class="row q-col-gutter-md">
       <div v-for="s in scenes" :key="s.name" class="col-12 col-sm-6 col-md-4">
-        <q-card flat bordered class="scene-card column full-height">
-          <q-img src="https://placehold.co/600x400?text=Scene" ratio="16/9" />
+        <q-card flat bordered class="column full-height">
+          <q-img :src="s.thumbnailSrc" ratio="16/9" />
           <q-card-section>
             <div class="text-h6">{{ s.title }}</div>
             <div class="text-caption text-grey-7 q-mt-xs">Task</div>
@@ -47,8 +47,3 @@ function playScene(scene) {
   </div>
 </template>
 
-<style scoped>
-.scene-card {
-  display: flex;
-}
-</style>

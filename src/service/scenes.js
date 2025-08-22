@@ -1,3 +1,10 @@
+import coffeeChatImg from "../assets/coffee_shop_chat.jpg";
+import coffeeThumbnailImg from "../assets/coffee_shop_thumbnail.jpg";
+import coffeeResultImg from "../assets/coffee_shop_result.jpg";
+import hotelChatImg from "../assets/hotel_room_chat.jpg";
+import hotelThumbnailImg from "../assets/hotel_room_thumbnail.jpg";
+import hotelResultImg from "../assets/hotel_room_result.jpg";
+
 const coffeeShop = {
   name: "coffee-shop",
   title: "Coffee Shop",
@@ -11,6 +18,38 @@ You ONLY speak chinese.
 
 The user is not a native chinese speaker, but only speaks chinese at B1 level, adapt your language use accordingly. 
 `,
+  images: {
+    chat: coffeeChatImg,
+    thumbnail: coffeeThumbnailImg,
+    result: coffeeResultImg,
+  },
 };
 
-export const scenes = [coffeeShop];
+const hotelRoom = {
+  name: "hotel-room",
+  title: "Book a hotel room in Beijing",
+  introduction: `You just arrived in Beijjing after a long and exhausting flight. Even though all your friends told you to book a hotel room beforehand, you didn't do so, because you were "going on an adventure". "Never again" you think to yourself tiredly as ou enter the first Hotel you can find. After paying for the flights you only have 800€ left for you 10 day holiday. You need to find a room for less than 50€ a night. Oh and you need wifi so you can post you  "unique" picutures to instagram. Make sure to ask for the password`,
+  task: "Book a hotel room for less than 50€ and retrieve the wifi password",
+  verification:
+    "The user booked a hotel room for less than 50€ and got the wifi password '666666'",
+  systemPrompt: `You are a friendly and polite receptionist at the hotel "桔子酒店（北京西三旗桥店". Write your answers in a spoken language style. Use casual natural words. DO NOT USE enumerations or other formatting that is only used in text. The user is a guest, that just entered the hotel. You can offer the following options:
+  - Suite delux with a rooftop terasse for 200€ per night.
+  - Business Suite with a whirlpool for 150€ per night.
+  - Comfort room delux for 80€ per night.
+  - City room for 60€ per night.
+  - Standard Room for 45€ per night. 
+  Remeber you want to convince the user to book an expensive room. 
+  If the user asks, the wifi password is: 666666
+
+  You ONLY speak chinese.
+
+  The user is not a native chinese speaker, but only speaks chinese at B1 level, adapt your language use accordingly. 
+  `,
+  images: {
+    chat: hotelChatImg,
+    thumbnail: hotelThumbnailImg,
+    result: hotelResultImg,
+  },
+};
+
+export const scenes = [coffeeShop, hotelRoom];

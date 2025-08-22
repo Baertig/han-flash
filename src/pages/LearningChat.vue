@@ -127,11 +127,28 @@ onMounted(() => {
 <style scoped>
 .holy-grail {
   display: grid;
-  grid-template-columns: 400px minmax(400px, 1fr) 620px;
+  grid-template-columns: 400px minmax(400px, 2fr) 400px;
   grid-template-areas: 'left center right';
   gap: 16px;
   padding: 16px;
   height: 100%;
+}
+
+/* Medium screens and below - hide left aside */
+@media (max-width: 1023.98px) {
+  .holy-grail {
+    grid-template-columns: minmax(400px, 1fr) 400px;
+    grid-template-areas: 'center right';
+  }
+}
+
+/* Small screens and below - hide both asides */
+@media (max-width: 599.98px) {
+  .holy-grail {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'center';
+    padding: 8px;
+  }
 }
 
 .left { 
@@ -146,22 +163,7 @@ onMounted(() => {
   grid-area: right; 
 }
 
-/* Medium screens and below - hide left aside */
-@media (max-width: 1023.98px) {
-  .holy-grail {
-    grid-template-columns: minmax(400px, 1fr) 620px;
-    grid-template-areas: 'center right';
-  }
-}
 
-/* Small screens and below - hide both asides */
-@media (max-width: 599.98px) {
-  .holy-grail {
-    grid-template-columns: 1fr;
-    grid-template-areas: 'center';
-    padding: 8px;
-  }
-}
 
 .placeholder {
   background: #f0f2f5;

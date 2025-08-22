@@ -1,10 +1,9 @@
 import { defineStore } from "pinia";
+import { gradeUserMessage, verifySceneGoal } from "../service/openai-client";
 import {
-  gradeUserMessage,
   generateLearningChatAssistantText,
   tokenizeChineseText,
-  verifySceneGoal,
-} from "../service/openai-client";
+} from "../service/openrouter-client";
 import { scenes } from "../service/scenes";
 
 export const useLearningChatStore = defineStore("learningChat", {
@@ -198,7 +197,7 @@ export const useLearningChatStore = defineStore("learningChat", {
           verification: this.currentScene.verification,
         });
 
-        this.verificationResult = result; // { sucess, justification }
+        this.verificationResult = result; // { success, justification }
 
         if (result && result.sucess) {
           this.sceneCompleted = true;

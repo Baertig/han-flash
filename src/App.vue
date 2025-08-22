@@ -7,7 +7,7 @@ import SettingsDialog from './dialogs/SettingsDialog.vue';
 import { storeToRefs } from 'pinia';
 import { useLearningChatStore } from './stores/learningChat';
 
-const { hasApiKey } = storeToRefs(useSettingsStore());
+const { hasOpenAiApiKey, hasOpenRouterApiKey } = storeToRefs(useSettingsStore());
 const router = useRouter();
 const chatStore = useLearningChatStore();
 
@@ -39,8 +39,8 @@ function goChat() {
     </q-header>
 
     <q-page-container class="full-height">
-      <q-banner v-if="!hasApiKey" class="bg-negative text-white" dense> OpenAI API key is missing. Please set it in settings.
-      </q-banner>
+      <q-banner v-if="!hasOpenAiApiKey" class="bg-negative text-white" dense> OpenAI API key is missing. Please set it in settings.  </q-banner>
+      <q-banner v-if="!hasOpenRouterApiKey" class="bg-negative text-white" dense> Open Router API key is missing. Please set it in settings.  </q-banner>
       <RouterView />
     </q-page-container>
   </q-layout>

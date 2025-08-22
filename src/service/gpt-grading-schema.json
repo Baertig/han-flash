@@ -15,18 +15,6 @@
                 "maximum": 4,
                 "description": "Score 0-4 for according to the rubric criteria"
             },
-            "interactiveCommunication": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 4,
-                "description": "Score 0-4 for according to the rubric criteria"
-            },
-            "contentAndTaskFulfillment": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 4,
-                "description": "Score 0-4 for according to the rubric criteria"
-            },
             "explanations": {
                 "type": "object",
                 "properties": {
@@ -37,21 +25,11 @@
                     "vocabulary": {
                         "type": "string",
                         "description": "Why this score"
-                    },
-                    "interactiveCommunication": {
-                        "type": "string",
-                        "description": "Score 0-4 for according to the rubric criteria"
-                    },
-                    "contentAndTaskFulfillment": {
-                        "type": "string",
-                        "description": "Score 0-4 for according to the rubric criteria"
                     }
                 },
                 "required": [
                     "grammarAndSyntax",
-                    "vocabulary",
-                    "interactiveCommunication",
-                    "contentAndTaskFulfillment"
+                    "vocabulary"
                 ],
                 "additionalProperties": false
             },
@@ -63,8 +41,6 @@
         "required": [
             "grammarAndSyntax",
             "vocabulary",
-            "interactiveCommunication",
-            "contentAndTaskFulfillment",
             "explanations",
             "suggested_improved_sentence"
         ],

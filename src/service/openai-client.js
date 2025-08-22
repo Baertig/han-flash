@@ -202,20 +202,6 @@ export async function gradeUserMessage({ message, userLevel, topic }) {
       - Level 2 (Developing): Has a limited vocabulary and often relies on simple, repeated words. May use inappropriate words or phrases that cause confusion.
       - Level 1 (Limited): Has a very limited vocabulary and cannot express ideas beyond the most basic concepts. Frequent use of paraphrasing due to lack of words.
       - Level 0 (Unacceptable): Vocabulary is insufficient to convey any meaning.
-
-    Interactive Communication: The ability to engage in a dialogue, respond, and manage the conversation.
-      - Level 4 (Excellent): Initiates and responds to turns in the dialogue with ease. Asks for and gives clarification naturally and effectively. Effortlessly manages the conversation flow.
-      - Level 3 (Proficient): Participates effectively in the dialogue. Is able to initiate, respond, and take turns appropriately. May occasionally need help or time to formulate a response.
-      - Level 2 (Developing): Can respond to direct questions but has difficulty initiating conversation or elaborating. Requires prompts or rephrasing from the other speaker to maintain the dialogue.
-      - Level 1 (Limited): Responds with single words or short phrases. Is unable to initiate or sustain the conversation. Communication often breaks down.
-      - Level 0 (Unacceptable): Does not respond or engage in any way.
-
-    Content & Task Fulfillment: How well the student addresses the topic or prompt.
-      - Level 4 (Excellent): The content is highly relevant, detailed, and well-developed. The student fully addresses all aspects of the task and provides thoughtful and insightful contributions.
-      - Level 3 (Proficient): The content is relevant to the topic and the student addresses the task sufficiently. Ideas are clear but may lack some depth or elaboration.
-      - Level 2 (Developing): The content is somewhat relevant, but the student may stray off-topic or fail to address all aspects of the task. Ideas are basic and lack detail.
-      - Level 1 (Limited): The content is often irrelevant or disconnected from the topic. The student shows little understanding of the task requirements.
-      - Level 0 (Unacceptable): The student's contribution has no relevance to the task or topic.
   `;
 
   const { data } = await openAiClient.post("/chat/completions", {

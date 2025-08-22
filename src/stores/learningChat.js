@@ -48,29 +48,17 @@ export const useLearningChatStore = defineStore("learningChat", {
         (o, m) => {
           o.grammarAndSyntax += m.meta.grading.grammarAndSyntax || 0;
           o.vocabulary += m.meta.grading.vocabulary || 0;
-          o.interactiveCommunication +=
-            m.meta.grading.interactiveCommunication || 0;
-          o.contentAndTaskFulfillment +=
-            m.meta.grading.contentAndTaskFulfillment || 0;
           return o;
         },
         {
           grammarAndSyntax: 0,
           vocabulary: 0,
-          interactiveCommunication: 0,
-          contentAndTaskFulfillment: 0,
         }
       );
       const len = arr.length;
       return {
         grammarAndSyntax: (acc.grammarAndSyntax / len).toFixed(1),
         vocabulary: (acc.vocabulary / len).toFixed(1),
-        interactiveCommunication: (acc.interactiveCommunication / len).toFixed(
-          1
-        ),
-        contentAndTaskFulfillment: (
-          acc.contentAndTaskFulfillment / len
-        ).toFixed(1),
       };
     },
 

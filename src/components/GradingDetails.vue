@@ -27,13 +27,6 @@ const selectedGrading = computed(
       <div class="q-mb-sm">
         <div><b>语法和句法</b>: {{ selectedGrading.grammarAndSyntax }}/4</div>
         <div><b>词汇</b>: {{ selectedGrading.vocabulary }}/4</div>
-        <div>
-          <b>互动交流</b>: {{ selectedGrading.interactiveCommunication }}/4
-        </div>
-        <div>
-          <b>内容和任务完成</b>:
-          {{ selectedGrading.contentAndTaskFulfillment }}/4
-        </div>
       </div>
       <div class="q-mb-sm">
         <div class="text-subtitle2 q-mb-xs">Explanations</div>
@@ -41,14 +34,6 @@ const selectedGrading = computed(
           <b>语法和句法:</b> {{ selectedGrading.explanations.grammarAndSyntax }}
         </div>
         <div><b>词汇:</b> {{ selectedGrading.explanations.vocabulary }}</div>
-        <div>
-          <b>互动交流:</b>
-          {{ selectedGrading.explanations.interactiveCommunication }}
-        </div>
-        <div>
-          <b>内容和任务完成:</b>
-          {{ selectedGrading.explanations.contentAndTaskFulfillment }}
-        </div>
       </div>
       <div>
         <div class="text-subtitle2 q-mb-xs">Improved sentence</div>
@@ -64,14 +49,6 @@ const selectedGrading = computed(
       </div>
       <div>
         Vocabulary: <b>{{ avgScores.vocabulary }}</b>
-      </div>
-      <div>
-        Interactive Communication:
-        <b>{{ avgScores.interactiveCommunication }}</b>
-      </div>
-      <div>
-        Content & Task Fulfillment:
-        <b>{{ avgScores.contentAndTaskFulfillment }}</b>
       </div>
     </div>
     <div v-else class="text-grey-7">No graded messages yet.</div>

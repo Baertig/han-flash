@@ -187,20 +187,6 @@ async function endConversation() {
                     class="q-mr-xs"
                     >V {{ m.meta.grading.vocabulary }}/4</q-chip
                   >
-                  <q-chip
-                    dense
-                    color="grey-8"
-                    text-color="white"
-                    class="q-mr-xs"
-                    >I {{ m.meta.grading.interactiveCommunication }}/4</q-chip
-                  >
-                  <q-chip
-                    dense
-                    color="grey-8"
-                    text-color="white"
-                    class="q-mr-xs"
-                    >C {{ m.meta.grading.contentAndTaskFulfillment }}/4</q-chip
-                  >
                 </template>
               </div>
             </template>

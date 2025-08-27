@@ -23,35 +23,9 @@ const selectedGrading = computed(
     <div v-if="!selectedGrading" class="text-grey-7">
       Select one of your messages to see details.
     </div>
-    <div v-else>
-      <div class="q-mb-sm">
-        <div><b>语法和句法</b>: {{ selectedGrading.grammarAndSyntax }}/4</div>
-        <div><b>词汇</b>: {{ selectedGrading.vocabulary }}/4</div>
-      </div>
-      <div class="q-mb-sm">
-        <div class="text-subtitle2 q-mb-xs">Explanations</div>
-        <div>
-          <b>语法和句法:</b> {{ selectedGrading.explanations.grammarAndSyntax }}
-        </div>
-        <div><b>词汇:</b> {{ selectedGrading.explanations.vocabulary }}</div>
-      </div>
-      <div>
-        <div class="text-subtitle2 q-mb-xs">Improved sentence</div>
-        <q-banner>{{ selectedGrading.suggested_improved_sentence }}</q-banner>
-      </div>
+    <div v-else class="grading-text">
+      <pre class="grading-content">{{ selectedGrading }}</pre>
     </div>
-
-    <q-separator class="q-my-md" />
-    <div class="text-subtitle2 q-mb-xs">Averages</div>
-    <div v-if="avgScores">
-      <div>
-        Grammar & Syntax: <b>{{ avgScores.grammarAndSyntax }}</b>
-      </div>
-      <div>
-        Vocabulary: <b>{{ avgScores.vocabulary }}</b>
-      </div>
-    </div>
-    <div v-else class="text-grey-7">No graded messages yet.</div>
   </div>
 </template>
 
@@ -61,5 +35,20 @@ const selectedGrading = computed(
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 12px;
+}
+
+.grading-text {
+  background: #f5f5f5;
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.grading-content {
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0;
 }
 </style>

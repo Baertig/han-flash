@@ -81,3 +81,43 @@ export async function tokenizeChineseText(text) {
   console.error("Data missing from openrouter tokenization response", data);
   return [];
 }
+
+export async function gradeUserMessage({
+  prevMessages,
+  message,
+  userLevel,
+  situation,
+}) {
+  const systemPrompt = `
+    You are a kind, compassionat and spirited chinese teach. You have the ESFJ-A personality type. You want your students to learn authentic every day chinese and always encourage them to improve. 
+    Your student is in the following situation: ${situation}.
+    Always provide feedback for the LAST message the student said. Rembember your feedback is always in ENGLISH. Illustrate your feedback with chinese example sentences.
+  `;
+
+  const { data } = await openRouterClient.post("/chat/completions", {
+    model: TEXT_MODEL,
+    messages: [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
+      {
+        role: "user",
+        content: `
+        The students dialog:
+
+        ${prevMessages}
+        ---
+        [LAST MESSAGE]学生:${message}
+        `,
+      },
+    ],
+  });
+
+  if (data.choices && data.choices[0]?.message?.content) {
+    return data.choices[0].message.content.trim();
+  }
+
+  console.error("Data missing from openrouter response", data);
+  return null;
+}

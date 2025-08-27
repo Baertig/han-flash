@@ -1,9 +1,10 @@
 import { defineStore } from "pinia";
-import { gradeUserMessage, verifySceneGoal } from "../service/openai-client";
 import {
   generateLearningChatAssistantText,
+  gradeUserMessage,
   tokenizeChineseText,
 } from "../service/openrouter-client";
+import { verifySceneGoal } from "../service/openai-client";
 import { scenes } from "../service/scenes";
 
 function isPunctuation(char) {
@@ -201,13 +202,28 @@ export const useLearningChatStore = defineStore("learningChat", {
       };
       this.messages.push(userMsg);
 
-      // grading background
+      const prevMessages = this.messages
+        .flatMap((m) => {
+          if (m.role == "assistant" && m.meta.type == "speech") {
+            return [`别人: ${m.text}`];
+          } else if (m.role == "user") {
+            return [`学生: ${m.text}`];
+          } else {
+            return [];
+          }
+        })
+        .join("\n---\n");
+
+      console.log("prevMessages", prevMessages);
+
+      // grading in background
       (async () => {
         try {
           const grading = await gradeUserMessage({
+            prevMessages,
             message: text,
             userLevel: this.level,
-            topic: this.topic,
+            situation: this.currentScene.LLMTopicDescription,
           });
           // find and update in place
           const msg = this.messages.find((m) => m.id === userMsg.id);

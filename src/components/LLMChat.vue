@@ -19,12 +19,12 @@ const input = ref("");
 
 const mapTypeToColor = (type) => {
   const mappings = {
-    'speech' : 'indigo-4', 
-    'action' : 'blue-grey-2',
-  }
+    speech: "indigo-4",
+    action: "blue-grey-2",
+  };
 
-  return mappings.hasOwnProperty(type) ? mappings[type] : 'grey-3'
-}
+  return mappings.hasOwnProperty(type) ? mappings[type] : "grey-3";
+};
 
 function selectMessage(messageId) {
   store.selectMessage(messageId);
@@ -180,10 +180,7 @@ async function endConversation() {
           >
             <template v-if="m.role === 'assistant' && m.meta?.tokens" #default>
               <div>
-                <template
-                  v-for="(t, idx) in m.meta.tokens"
-                  :key="idx"
-                >
+                <template v-for="(t, idx) in m.meta.tokens" :key="idx">
                   <template v-if="t.word === '\n'">
                     <br />
                   </template>
@@ -240,29 +237,13 @@ async function endConversation() {
                   size="16px"
                   color="primary"
                 />
-                <template v-else-if="m.meta?.grading">
-                  <q-chip
-                    dense
-                    color="grey-8"
-                    text-color="white"
-                    class="q-mr-xs"
-                    >G {{ m.meta.grading.grammarAndSyntax }}/4</q-chip
-                  >
-                  <q-chip
-                    dense
-                    color="grey-8"
-                    text-color="white"
-                    class="q-mr-xs"
-                    >V {{ m.meta.grading.vocabulary }}/4</q-chip
-                  >
-                </template>
               </div>
             </template>
           </q-chat-message>
         </div>
 
         <q-chat-message v-if="assistantLoading" :name="'伙伴'" :sent="false">
-              <q-spinner-dots size="2rem" />
+          <q-spinner-dots size="2rem" />
         </q-chat-message>
       </div>
 

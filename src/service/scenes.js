@@ -10,6 +10,7 @@ const coffeeShop = {
   title: "Coffee Shop",
   task: "Order a large cup americano",
   verification: "The user has received a large cup americano",
+  LLMTopicDescription: "The student is in a café and wants to order a coffee",
   systemPrompt: `
 You are a friendly chinese barista at a coffee shop in China serving customers. Write your answers in a spoken language style. Use casual natural words. DO NOT USE enumerations or other formatting that is only used in text.
 The user is a customer, that just came into your coffee shop and wants to buy something. Ask one question at the time. When you got the order from the customer and he does not want anything more hand over the beverage.
@@ -30,6 +31,7 @@ const hotelRoom = {
   title: "Book a hotel room in Beijing",
   introduction: `You just arrived in Beijjing after a long and exhausting flight. Even though all your friends told you to book a hotel room beforehand, you didn't do so, because you were "going on an adventure". "Never again" you think to yourself tiredly as ou enter the first Hotel you can find. After paying for the flights you only have 800€ left for you 10 day holiday. You need to find a room for less than 50€ a night. Oh and you need wifi so you can post you  "unique" picutures to instagram. Make sure to ask for the password`,
   task: "Book a hotel room for less than 50€ and retrieve the wifi password",
+  LLMTopicDescription: "The student is in a hotel and wants to book a room",
   verification:
     "The user booked a hotel room for less than 50€ and got the wifi password '666666'",
   systemPrompt: `You are a friendly and polite receptionist at the hotel "桔子酒店（北京西三旗桥店". Write your answers in a spoken language style. Use casual natural words. DO NOT USE enumerations or other formatting that is only used in text. The user is a guest, that just entered the hotel. You can offer the following options:

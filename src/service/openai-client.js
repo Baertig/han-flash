@@ -3,7 +3,6 @@ import axios from "axios";
 import { useSettingsStore } from "../stores/settings";
 import translationSchema from "./gpt-translation-schema.json";
 import imageIdeasSchema from "./gpt-image-ideas-schema.json";
-import gradingSchema from "./gpt-grading-schema.json";
 import summarySchema from "./gpt-conversation-summary-schema.json";
 
 export const openAiClient = axios.create({
@@ -124,52 +123,6 @@ export async function generateImageIdeas(word) {
   });
   const result = JSON.parse(data.choices[0].message.content);
   return result.ideas;
-}
-
-export async function gradeUserMessage({ message, userLevel, topic }) {
-  const systemPrompt = `
-    You are a supportive Chinese teacher. Evaluate the students text based on the following Rubric Criteria. The explenations for the grading should be in english. The improved sentence should be chinese.
-
-    Rubric Criteria:
-    Grammar & Syntax: The accuracy and complexity of sentence structures.
-      - Level 4 (Excellent): Demonstrates a wide range of complex grammatical structures with a high degree of accuracy. Errors are rare and are often corrected immediately.
-      - Level 3 (Proficient): Uses a mix of simple and complex structures with good control. Minor grammatical errors may occur but do not obscure meaning.
-      - Level 2 (Developing): Uses basic grammatical structures but makes frequent errors, particularly with tenses or more complex constructions. Errors sometimes cause confusion.
-      - Level 1 (Limited): Makes pervasive and consistent grammatical errors, even with basic structures, which makes the message difficult to understand.
-      - Level 0 (Unacceptable): No comprehensible grammatical structures are used.
-
-    Vocabulary: The range, precision, and appropriateness of word choice.
-      - Level 4 (Excellent): Uses a broad and precise range of vocabulary, including idiomatic expressions, to express ideas effectively. Word choice is consistently appropriate for the context.
-      - Level 3 (Proficient): Uses a sufficient range of vocabulary to communicate clearly. May occasionally search for a word or use a less precise one, but meaning is generally clear.
-      - Level 2 (Developing): Has a limited vocabulary and often relies on simple, repeated words. May use inappropriate words or phrases that cause confusion.
-      - Level 1 (Limited): Has a very limited vocabulary and cannot express ideas beyond the most basic concepts. Frequent use of paraphrasing due to lack of words.
-      - Level 0 (Unacceptable): Vocabulary is insufficient to convey any meaning.
-  `;
-
-  const { data } = await openAiClient.post("/chat/completions", {
-    model: TEXT_MODEL,
-    messages: [
-      {
-        role: "system",
-        content: systemPrompt,
-      },
-      {
-        role: "user",
-        content: `Student CEFR level: ${userLevel}. \n text: ${message}`,
-      },
-    ],
-    response_format: {
-      type: "json_schema",
-      json_schema: gradingSchema,
-    },
-  });
-
-  if (data.choices && data.choices[0]?.message?.content) {
-    return JSON.parse(data.choices[0].message.content);
-  }
-
-  console.error("Data missing from openai response", data);
-  return null;
 }
 
 export async function verifySceneGoal({ history, verification }) {

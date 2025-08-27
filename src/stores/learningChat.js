@@ -6,6 +6,86 @@ import {
 } from "../service/openrouter-client";
 import { scenes } from "../service/scenes";
 
+function isPunctuation(char) {
+  return [
+    "⟨",
+    "⟩",
+    "，",
+    "！",
+    "？",
+    "；",
+    "：",
+    "（",
+    "）",
+    "［",
+    "］",
+    "【",
+    "】",
+    "。",
+  ].includes(char);
+}
+
+async function translateAssistantMessage(text) {
+  const tokens = await tokenizeChineseText(text);
+  const renderTokens = [];
+
+  for (let i = 0; i < text.length; i++) {
+    const firstWord = tokens.at(0)?.word;
+    const firstLength = firstWord ? firstWord.length : 1;
+    const firstSupposedWortInText = text.substring(i, i + firstLength);
+
+    const secondWord = tokens.at(1)?.word;
+    const secondLength = secondWord ? secondWord.length : 1;
+    const alternativeSupposedWortInText = text.substring(i, i + secondLength);
+
+    // exclude punctuation characters from the ones that are translated
+    if (isPunctuation(firstSupposedWortInText)) {
+      if (firstWord == firstSupposedWortInText) {
+        tokens.shift();
+      } else if (firstWord && firstWord.startsWith(firstSupposedWortInText)) {
+        tokens.at(0).word = firstWord.replace(firstSupposedWortInText, "");
+      }
+
+      renderTokens.push({
+        word: firstSupposedWortInText,
+        translation: false,
+      });
+    } else if (firstSupposedWortInText == firstWord) {
+      console.log(
+        "firstSupposedWortInText == firstWord",
+        firstSupposedWortInText,
+        firstWord
+      );
+      const firstToken = tokens.shift();
+      renderTokens.push(firstToken);
+      i += firstSupposedWortInText.length - 1; // - 1 because that is done by the loop anyway
+
+      //This is a hack to allow for synchronization the translation of the LLM somtimes has double words in it.
+    } else if (alternativeSupposedWortInText == secondWord) {
+      console.log(
+        "alternativeSupposedWortInText == secondWord",
+        alternativeSupposedWortInText,
+        secondWord
+      );
+      tokens.shift();
+      const secondToken = tokens.shift();
+      renderTokens.push(secondToken);
+      i += alternativeSupposedWortInText.length - 1;
+    } else {
+      console.log(
+        `firstSupposedWortInTexT (${firstSupposedWortInText}) !== firstWord (${firstWord})`
+      );
+      const currentChar = text[i];
+      renderTokens.push({
+        word: currentChar,
+        translation: false,
+      });
+    }
+  }
+
+  return renderTokens;
+}
+
 export const useLearningChatStore = defineStore("learningChat", {
   state: () => ({
     level: "A1",
@@ -137,7 +217,7 @@ export const useLearningChatStore = defineStore("learningChat", {
             this.selectedMessageId = userMsg.id;
           }
         } catch (e) {
-          /* ignore */
+          console.error("error during grading:", e);
         } finally {
           const msg = this.messages.find((m) => m.id === userMsg.id);
           if (msg) msg.meta.gradingLoading = false;
@@ -159,18 +239,51 @@ export const useLearningChatStore = defineStore("learningChat", {
           systemPrompt: this.systemPrompt,
         });
 
-        // Then tokenize the response
-        const tokens = await tokenizeChineseText(text);
+        const openParentesis = ["(", "（"];
+        const closeParentesis = [")", "）"];
 
-        const assMsg = {
+        const messages = text
+          .split("")
+          .reduce(
+            (msgs, char) => {
+              if (openParentesis.includes(char)) {
+                return [...msgs, { type: "action", text: "" }];
+              } else if (closeParentesis.includes(char)) {
+                return [...msgs, { type: "speech", text: "" }];
+              } else {
+                msgs.at(-1).text += char;
+                return msgs;
+              }
+            },
+            [{ type: "speech", text: "" }]
+          )
+          .map((m) => ({
+            ...m,
+            text: m.text.trimStart(),
+          }))
+          .filter((m) => m.text.length > 0);
+
+        const translated = await Promise.all(
+          messages.map(async (m) => {
+            const tokens = await translateAssistantMessage(m.text);
+
+            return {
+              text,
+              meta: {
+                tokens,
+                type: m.type,
+              },
+            };
+          })
+        );
+
+        const withIds = translated.map((m) => ({
+          ...m,
           id: this.nextId++,
           role: "assistant",
-          text,
-          meta: {
-            tokens: tokens,
-          },
-        };
-        this.messages.push(assMsg);
+        }));
+
+        this.messages = this.messages.concat(withIds);
       } finally {
         this.assistantLoading = false;
       }

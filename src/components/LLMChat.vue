@@ -9,18 +9,22 @@ import SceneCompletionDialog from "../dialogs/SceneCompletionDialog.vue";
 const $q = useQuasar();
 const router = useRouter();
 const store = useLearningChatStore();
-const {
-  topic,
-  messages,
-  interestingWords,
-  assistantLoading,
-  summaryLoading,
-} = storeToRefs(store);
+const { topic, messages, interestingWords, assistantLoading, summaryLoading } =
+  storeToRefs(store);
 
 const emit = defineEmits(["messageSelected"]);
 
 const isBusy = computed(() => store.isBusy);
 const input = ref("");
+
+const mapTypeToColor = (type) => {
+  const mappings = {
+    'speech' : 'indigo-4', 
+    'action' : 'blue-grey-2',
+  }
+
+  return mappings.hasOwnProperty(type) ? mappings[type] : 'grey-3'
+}
 
 function selectMessage(messageId) {
   store.selectMessage(messageId);
@@ -30,11 +34,10 @@ function selectMessage(messageId) {
 function send() {
   const content = input.value;
   input.value = "";
-  store
-    .sendMessage(content)
-    .catch(() =>
-      $q.notify({ type: "negative", message: "Assistant failed to reply" })
-    );
+  store.sendMessage(content).catch((e) => {
+    console.error("Error when sending message", e);
+    $q.notify({ type: "negative", message: "Assistant failed to reply" });
+  });
 }
 
 async function endConversation() {
@@ -46,7 +49,7 @@ async function endConversation() {
         componentProps: {
           success: result.success,
           justification: result.justification,
-          resultImage: store.currentScene?.images?.result
+          resultImage: store.currentScene?.images?.result,
         },
       }).onOk(() => {
         store.reset();
@@ -113,7 +116,10 @@ async function endConversation() {
           </q-img>
         </div>
 
-        <div v-else class="header-content q-pa-md row justify-between items-center">
+        <div
+          v-else
+          class="header-content q-pa-md row justify-between items-center"
+        >
           <div>
             <div class="text-subtitle1 row items-center q-gutter-sm">
               {{ store.currentScene?.title }}
@@ -168,52 +174,62 @@ async function endConversation() {
             :name="m.role === 'user' ? 'You' : '伙伴'"
             :text="[m.text]"
             :sent="m.role === 'user'"
+            :bg-color="mapTypeToColor(m.meta?.type)"
             class="hanzi"
             @click="m.role === 'user' && selectMessage(m.id)"
           >
             <template v-if="m.role === 'assistant' && m.meta?.tokens" #default>
-              <div class="tokens-container">
-                <span
+              <div>
+                <template
                   v-for="(t, idx) in m.meta.tokens"
                   :key="idx"
-                  class="token"
                 >
-                  {{ t.word }}
-                  <q-menu
-                    anchor="bottom middle"
-                    self="top middle"
-                    :offset="[0, 6]"
-                  >
-                    <q-card style="min-width: 240px">
-                      <q-card-section class="q-pb-none">
-                        <div class="text-subtitle1">{{ t.word }}</div>
-                        <div class="text-caption text-grey-7">
-                          {{ t.pinyin }}
-                        </div>
-                      </q-card-section>
-                      <q-card-section class="q-pt-sm">{{
-                        t.translation
-                      }}</q-card-section>
-                      <q-card-actions align="right">
-                        <q-btn
-                          flat
-                          color="primary"
-                          :icon="
-                            interestingWords.some((w) => w.word === t.word)
-                              ? 'star'
-                              : 'star_border'
-                          "
-                          :label="
-                            interestingWords.some((w) => w.word === t.word)
-                              ? 'Unstar'
-                              : 'Star'
-                          "
-                          @click.stop="store.toggleInteresting(t)"
-                        />
-                      </q-card-actions>
-                    </q-card>
-                  </q-menu>
-                </span>
+                  <template v-if="t.word === '\n'">
+                    <br />
+                  </template>
+                  <template v-else-if="t.translation">
+                    <span class="token">
+                      {{ t.word }}
+                      <q-menu
+                        anchor="bottom middle"
+                        self="top middle"
+                        :offset="[0, 6]"
+                      >
+                        <q-card style="min-width: 240px">
+                          <q-card-section class="q-pb-none">
+                            <div class="text-subtitle1">{{ t.word }}</div>
+                            <div class="text-caption text-grey-7">
+                              {{ t.pinyin }}
+                            </div>
+                          </q-card-section>
+                          <q-card-section class="q-pt-sm">{{
+                            t.translation
+                          }}</q-card-section>
+                          <q-card-actions align="right">
+                            <q-btn
+                              flat
+                              color="primary"
+                              :icon="
+                                interestingWords.some((w) => w.word === t.word)
+                                  ? 'star'
+                                  : 'star_border'
+                              "
+                              :label="
+                                interestingWords.some((w) => w.word === t.word)
+                                  ? 'Unstar'
+                                  : 'Star'
+                              "
+                              @click.stop="store.toggleInteresting(t)"
+                            />
+                          </q-card-actions>
+                        </q-card>
+                      </q-menu>
+                    </span>
+                  </template>
+                  <template v-else>
+                    <span>{{ t.word }}</span>
+                  </template>
+                </template>
               </div>
             </template>
 
@@ -246,12 +262,7 @@ async function endConversation() {
         </div>
 
         <q-chat-message v-if="assistantLoading" :name="'伙伴'" :sent="false">
-          <template #default>
-            <div class="row items-center q-gutter-sm">
-              <q-spinner size="18px" color="primary" />
-              <span class="text-grey-7">正在思考…</span>
-            </div>
-          </template>
+              <q-spinner-dots size="2rem" />
         </q-chat-message>
       </div>
 

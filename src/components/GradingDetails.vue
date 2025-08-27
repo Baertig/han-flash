@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from "vue";
+import MarkdownRenderer from "./MarkdownRenderer.vue";
 
 const props = defineProps({
   selectedMessage: {
@@ -24,7 +25,7 @@ const selectedGrading = computed(
       Select one of your messages to see details.
     </div>
     <div v-else class="grading-text">
-      <pre class="grading-content">{{ selectedGrading }}</pre>
+      <MarkdownRenderer :content="selectedGrading" />
     </div>
   </div>
 </template>
@@ -41,14 +42,5 @@ const selectedGrading = computed(
   background: #f5f5f5;
   border-radius: 4px;
   padding: 12px;
-}
-
-.grading-content {
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  margin: 0;
 }
 </style>

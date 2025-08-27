@@ -52,30 +52,18 @@ async function translateAssistantMessage(text) {
         translation: false,
       });
     } else if (firstSupposedWortInText == firstWord) {
-      console.log(
-        "firstSupposedWortInText == firstWord",
-        firstSupposedWortInText,
-        firstWord
-      );
       const firstToken = tokens.shift();
       renderTokens.push(firstToken);
       i += firstSupposedWortInText.length - 1; // - 1 because that is done by the loop anyway
 
-      //This is a hack to allow for synchronization the translation of the LLM somtimes has double words in it.
+      //This is a hack to allow to skip a word
+      //the translation of the LLM somtimes has double words in it.
     } else if (alternativeSupposedWortInText == secondWord) {
-      console.log(
-        "alternativeSupposedWortInText == secondWord",
-        alternativeSupposedWortInText,
-        secondWord
-      );
       tokens.shift();
       const secondToken = tokens.shift();
       renderTokens.push(secondToken);
       i += alternativeSupposedWortInText.length - 1;
     } else {
-      console.log(
-        `firstSupposedWortInTexT (${firstSupposedWortInText}) !== firstWord (${firstWord})`
-      );
       const currentChar = text[i];
       renderTokens.push({
         word: currentChar,
@@ -213,8 +201,6 @@ export const useLearningChatStore = defineStore("learningChat", {
           }
         })
         .join("\n---\n");
-
-      console.log("prevMessages", prevMessages);
 
       // grading in background
       (async () => {

@@ -1,9 +1,14 @@
 import coffeeChatImg from "../assets/coffee_shop_chat.jpg";
 import coffeeThumbnailImg from "../assets/coffee_shop_thumbnail.jpg";
 import coffeeResultImg from "../assets/coffee_shop_result.jpg";
+
 import hotelChatImg from "../assets/hotel_room_chat.jpg";
 import hotelThumbnailImg from "../assets/hotel_room_thumbnail.jpg";
 import hotelResultImg from "../assets/hotel_room_result.jpg";
+
+import streetFoodChatImg from "../assets/street_food_taiwan_chat.jpg";
+import streetFoodThumbnailImg from "../assets/street_food_taiwan_thumbnail.jpg";
+import streetFoodResultImg from "../assets/street_food_taiwan_result.jpg";
 
 const coffeeShop = {
   name: "coffee-shop",
@@ -54,4 +59,23 @@ const hotelRoom = {
   },
 };
 
-export const scenes = [coffeeShop, hotelRoom];
+const streetFoodTaiwan = {
+  name: "street-food-taiwan",
+  title: "Order Street in a Taiwanese Night Market",
+  task: "Order a Fried chicken together with fried sweet potato wedges. Your are hungry for some mochi next: ask the merchant for the best stall in proximity",
+  verification:
+    "The user bought fried chicken and was told where the best mochi stall is",
+  LLMTopicDescription:
+    "The student is on a street food market and wants to order some food.",
+  systemPrompt: `
+  Your are the boss of a street food stall in Taiwans Kaohsiung's Night Market: Ruifeng. The name of your street fool stall is Angel Fried Chicken Cutlets (天使雞排-瑞豐店). You have the ESTP-T personality type. You sell fried chicken and fries. You sell fried chicken and fries. Answer in a spoken language style and user natural words. DO NOT USE enumerations or other formatting that is only used in text. The user is a customer who wants to buy fried chicken from you. You are a local Taiwanese, who has been part of the street food market scene for a while. You know the other stalls well and are happy to recommend them to your customers.   
+  Rembember you ONLY speak CHINESE.
+  `,
+  images: {
+    chat: streetFoodChatImg,
+    thumbnail: streetFoodThumbnailImg,
+    result: streetFoodResultImg,
+  },
+};
+
+export const scenes = [coffeeShop, hotelRoom, streetFoodTaiwan];

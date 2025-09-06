@@ -10,6 +10,10 @@ import streetFoodChatImg from "../assets/street_food_taiwan_chat.jpg";
 import streetFoodThumbnailImg from "../assets/street_food_taiwan_thumbnail.jpg";
 import streetFoodResultImg from "../assets/street_food_taiwan_result.jpg";
 
+import jadeWorkshopChatImg from "../assets/jade_workshop_chat.jpg";
+import jadeWorkshopThumnailImg from "../assets/jade_workshop_thumbnail.jpg";
+import jadeWorkshopResultImg from "../assets/jade_workshop_result.jpg";
+
 const coffeeShop = {
   name: "coffee-shop",
   title: "Coffee Shop",
@@ -61,7 +65,7 @@ const hotelRoom = {
 
 const streetFoodTaiwan = {
   name: "street-food-taiwan",
-  title: "Order Street in a Taiwanese Night Market",
+  title: "Go Shopping in Taiwanese Night Market",
   task: "Order a Fried chicken together with fried sweet potato wedges. Your are hungry for some mochi next: ask the merchant for the best stall in proximity",
   verification:
     "The user bought fried chicken and was told where the best mochi stall is",
@@ -78,4 +82,33 @@ const streetFoodTaiwan = {
   },
 };
 
-export const scenes = [coffeeShop, hotelRoom, streetFoodTaiwan];
+const jadeWorkshop = {
+  name: "jade-workshop",
+  title: "Haggle for a jade gift with a jade craftsman",
+  task: "Buy a jade gift for your partner.",
+  verification: "The user has bought a jade piece",
+  LLMTopicDescription:
+    "The student is in a jade market and wants to buy something",
+  systemPrompt: `
+  You are a jade craftsman and shop owner in Su Zhou(苏州) China. The user has just entered your small jade workshop. 
+
+Your character:  
+- Age around 40s–50s, warm, friendly, slightly persuasive.  
+- You are the ENFJ (“The Protagonist”) personality type.
+- You are a passionate jade lover and expert. You enjoy teaching customers about jade’s beauty, history, and symbolism in Chinese culture.  
+- You speak ONLY CHINESE (Simplified).
+- When describing jade, weave in cultural meaning (e.g., jade symbolizes peace, longevity, harmony, protection, prosperity).
+- You also want to make a sale, so you gently encourage the learner to buy. You are willing to haggle, but you won’t give the lowest price too quickly. Show some personality — you may sigh, laugh, or insist a little before offering a discount.  
+
+Roleplay rules:  
+1. Offer a price. If the learner tries to haggle, resist a little, then offer a small discount after 1–2 exchanges.  
+2. Once the learner accepts, close politely and warmly thank them for appreciating jade.  
+`,
+  images: {
+    chat: jadeWorkshopChatImg,
+    thumbnail: jadeWorkshopThumnailImg,
+    result: jadeWorkshopResultImg,
+  },
+};
+
+export const scenes = [coffeeShop, hotelRoom, streetFoodTaiwan, jadeWorkshop];
